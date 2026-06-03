@@ -1,0 +1,97 @@
+{
+  "name": "ChronoIndustrialist UI Tokens",
+  "version": "0.1.0",
+  "style": "simple industrial fixed-camera readable",
+  "colors": {
+    "background": "#131516",
+    "surface": "#1B2428",
+    "surfaceElevated": "#222B30",
+    "border": "#415055",
+    "textPrimary": "#DCE7E4",
+    "textSecondary": "#A8B7B8",
+    "accent": "#6AAFB5",
+    "accentDark": "#28737F",
+    "accentWarm": "#F0A24A",
+    "success": "#43B66B",
+    "warning": "#E69E33",
+    "danger": "#D44438",
+    "storage": "#384536",
+    "delivery": "#66511F",
+    "register": "#142E57",
+    "customer": "#33B8F2"
+  },
+  "fontSizes": {
+    "caption": 11,
+    "body": 14,
+    "button": 14,
+    "section": 16,
+    "title": 22,
+    "display": 28
+  },
+  "spacing": {
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "xxl": 32
+  },
+  "radius": {
+    "none": 0,
+    "sm": 4,
+    "md": 6,
+    "lg": 8
+  },
+  "stroke": {
+    "thin": 1,
+    "base": 2,
+    "heavy": 3
+  },
+  "uiStates": {
+    "normal": {
+      "fill": "#252D31",
+      "border": "#56666B",
+      "text": "#DCE7E4"
+    },
+    "hover": {
+      "fill": "#2F3E45",
+      "border": "#6AAFB5",
+      "text": "#FFFFFF"
+    },
+    "pressed": {
+      "fill": "#17242A",
+      "border": "#43848B",
+      "text": "#DCE7E4"
+    },
+    "disabled": {
+      "fill": "#1F2325",
+      "border": "#33393B",
+      "text": "#727B7D"
+    },
+    "selected": {
+      "fill": "#3D746F",
+      "border": "#B6F0E3",
+      "text": "#FFFFFF"
+    },
+    "warning": {
+      "fill": "#7A5219",
+      "border": "#E69E33",
+      "text": "#F2D28A"
+    },
+    "danger": {
+      "fill": "#421715",
+      "border": "#D44438",
+      "text": "#F2D8D6"
+    }
+  },
+  "sizes": {
+    "icon": 24,
+    "buttonHeight": 40,
+    "primaryButtonHeight": 44,
+    "panelSmall": [320, 180],
+    "panelMedium": [320, 240],
+    "panelLarge": [420, 300],
+    "topBar": [1280, 72],
+    "bottomBar": [1280, 80]
+  }
+}

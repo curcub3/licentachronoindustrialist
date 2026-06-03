@@ -1,0 +1,192 @@
+key,ro
+APP_TITLE,Chrono Industrialist
+APP_SUBTITLE,Prototip de management pentru magazin retro
+BTN_START_NEW_GAME,Joc Nou
+BTN_LOAD_GAME,Încarcă Jocul
+BTN_SAVE_GAME,Salvează Jocul
+BTN_OPTIONS,Opțiuni
+BTN_EXIT,Ieșire
+BTN_CLOSE,Închide
+BTN_OPEN_SHOP,Deschide Magazinul
+BTN_NEXT_DAY,Ziua Următoare
+BTN_RESET,Resetare
+BTN_SAVE,Salvează
+BTN_LOAD,Încarcă
+BTN_PAUSE,Pauză
+BTN_PRICES,Prețuri
+BTN_ORDERS,Comenzi
+BTN_STAFF,Personal
+BTN_EVENT,Eveniment
+BTN_REPORT,Raport
+BTN_APPLY_PRICE,Aplică Prețul
+BTN_PLACE_ORDER,Plasează Comanda
+BTN_BUY_SHOP_ITEM,Cumpără pentru Magazin
+BTN_ASSIGN_SHELF,Atribuie Raftul
+BTN_REFILL,Realimentează
+BTN_REFILL_ALL,Realimentează Toate Rafturile
+BTN_HIRE,Angajează
+BTN_FIRE,Concediază
+BTN_COPY_REPORT,Copiază Raportul
+LABEL_DAY,Ziua
+LABEL_WEEK,Săpt.
+LABEL_PHASE,Fază
+LABEL_CASH,Numerar
+LABEL_REPUTATION,Reputație
+LABEL_SATISFACTION,Satisfacție
+LABEL_MOOD,Context economic
+LABEL_VAT,TVA
+LABEL_VAT_OWED,TVA de plată
+LABEL_VAT_ACCRUED,TVA acumulat
+LABEL_VAT_PAID,TVA plătit
+LABEL_RENT,Chirie
+LABEL_UTILITIES,Utilități
+LABEL_PAYROLL,Salarii
+LABEL_SUPPLIER_COSTS,Costuri furnizori
+LABEL_MICRO_TAX,Impozit micro
+LABEL_GROSS_REVENUE,Venit brut
+LABEL_EXPENSES,Cheltuieli
+LABEL_NET_PROFIT,Profit net
+LABEL_STORAGE,Depozit
+LABEL_ORDERS,Comenzi
+LABEL_REGISTER,Casă de marcat
+LABEL_PRODUCTS,Produse
+LABEL_NEXT_MOVES,Pași următori
+LABEL_SUPPORT,Reclamații
+LABEL_STAFF,Personal
+LABEL_SHOP_UPGRADES,Îmbunătățiri magazin
+LABEL_EMPTY,Gol
+LABEL_SLOT,Slot
+LABEL_NO_TIMESTAMP,Fără dată
+LABEL_IN_STOCK,în stoc
+LABEL_IMPORT_RISK,risc import
+LABEL_COST_TREND,inflație/import
+REPORT_RUN_ENDED,SESIUNE ÎNCHEIATĂ
+REPORT_DAY,RAPORT ZILNIC
+REPORT_MAIN_PROBLEM,Problemă principală
+REPORT_SOLD,Vândute
+REPORT_LOST_QUEUE,Clienți pierduți la coadă
+REPORT_LOST_SHELF,Clienți pierduți din lipsă stoc
+REPORT_STOCKOUTS,Produse epuizate
+REPORT_RESTOCKED,Realimentate
+REPORT_OVERFLOW,Depășire depozit
+REPORT_NO_PENDING_ORDERS,Nu există comenzi în așteptare.
+STATUS_EMPTY,EPUIZAT
+STATUS_LOW,SCĂZUT
+STATUS_FULL,PLIN
+STATUS_ACTIVE,ACTIV
+STATUS_OK,OK
+PHASE_Morning,Dimineață
+PHASE_Management,Administrare
+PHASE_Business,Vânzare
+PHASE_Closing,Închidere
+MOOD_BudgetMonth,Lună de buget
+MOOD_NostalgiaBoom,Val de nostalgie
+MOOD_CollectorCraze,Febră de colecționari
+MOOD_ImportSqueeze,Presiune pe importuri
+MOOD_UtilityShock,Șoc la utilități
+PRODUCT_1,Cartuș Retro
+PRODUCT_2,Consolă Clasică
+PRODUCT_3,Cutie de Colecție
+PRODUCT_4,Joc Portabil
+PRODUCT_5,RPG de Import
+PRODUCT_6,Placă Arcade
+PRODUCT_7,Kit de Reparații
+PRODUCT_8,Consolă Rară
+SHELF_Basic,Raft simplu
+SHELF_Premium,Display premium
+SHELF_Featured,Raft promovat
+SHOP_ITEM_1,Raft Economic
+SHOP_ITEM_2,Display Premium
+SHOP_ITEM_3,Capăt de Raft Promovat
+SHOP_ITEM_4,Rafturi pentru Depozit
+SHOP_ITEM_5,Decor Neon
+SHOP_ITEM_6,Scanner la Casă
+SHOP_ITEM_7,Cărucior de Stoc
+EVENT_DemandSpike,Interesul pentru produse retro a crescut.
+EVENT_SupplierDelay,Transportul furnizorului întârzie.
+EVENT_ReputationCrisis,O recenzie negativă afectează încrederea clienților.
+EVENT_EmployeeStrike,Angajații cer condiții mai bune.
+EVENT_HolidayRush,Traficul de sărbători crește.
+EVENT_ImportPressure,Presiunea EUR/RON a crescut costurile de import.
+EVENT_DefectiveProductComplaint,Un client reclamă o consolă defectă.
+EVENT_RefundRequest,O cerere de rambursare așteaptă decizie.
+EVENT_WarrantyDispute,Există o dispută de garanție pentru un produs de colecție.
+EVENT_NONE,Niciun eveniment
+EVENT_PROMPT_DemandSpike,Cererea crește. Cum gestionezi valul?
+EVENT_PROMPT_SupplierDelay,O livrare întârzie. Cum răspunzi?
+EVENT_PROMPT_ReputationCrisis,O recenzie negativă se răspândește.
+EVENT_PROMPT_EmployeeStrike,Personalul este nemulțumit.
+EVENT_PROMPT_HolidayRush,Traficul de sărbători crește.
+EVENT_PROMPT_ImportPressure,Presiunea EUR/RON crește costurile de import.
+EVENT_PROMPT_DefectiveProductComplaint,Reclamație pentru consolă defectă.
+EVENT_PROMPT_RefundRequest,Clientul cere rambursare.
+EVENT_PROMPT_WarrantyDispute,Dispută de garanție pentru produs de colecție.
+EVENT_A_DemandSpike,Rulează o promoție mică
+EVENT_B_DemandSpike,Păstrează numerarul
+EVENT_A_SupplierDelay,Plătește transport prioritar
+EVENT_B_SupplierDelay,Acceptă întârzierea
+EVENT_A_ReputationCrisis,Oferă rambursări
+EVENT_B_ReputationCrisis,Ignoră
+EVENT_A_EmployeeStrike,Plătește bonus de moral
+EVENT_B_EmployeeStrike,Continuă fără bonus
+EVENT_A_HolidayRush,Pregătește servicii suplimentare
+EVENT_B_HolidayRush,Păstrează numerarul
+EVENT_A_ImportPressure,Absoarbe costul
+EVENT_B_ImportPressure,Ridică prețurile mai târziu
+EVENT_A_DefectiveProductComplaint,Rambursare completă
+EVENT_B_DefectiveProductComplaint,Credit în magazin
+EVENT_A_RefundRequest,Rambursează
+EVENT_B_RefundRequest,Refuză
+EVENT_A_WarrantyDispute,Verifică furnizorul
+EVENT_B_WarrantyDispute,Amână răspunsul
+SUPPORT_NONE,Nicio reclamație
+SUPPORT_ABSORB_IMPORT,Magazinul a absorbit o parte din șocul importurilor.
+SUPPORT_PASS_IMPORT,Costurile de import au fost transferate clienților.
+SUPPORT_FULL_REFUND,Rambursarea completă a protejat încrederea.
+SUPPORT_STORE_CREDIT,Creditul în magazin a limitat reclamația.
+SUPPORT_REFUND_ACCEPTED,Cererea de rambursare a fost acceptată.
+SUPPORT_REFUND_DENIED,Rambursarea a fost refuzată; reputația a scăzut.
+SUPPORT_INVESTIGATED_WARRANTY,Garanția a fost verificată cu furnizorul.
+SUPPORT_WARRANTY_DELAYED,Disputa de garanție a rămas nerezolvată.
+NOTIFY_RUNTIME_READY,Interfața este pregătită. Butoanele sunt conectate.
+NOTIFY_SHOP_OPEN,Magazinul s-a deschis. Faza de vânzare rulează.
+NOTIFY_ALREADY_OPEN,Magazinul este deja deschis.
+NOTIFY_DAY_CLOSED,Ziua este deja închisă. Citește raportul, apoi apasă Ziua Următoare.
+NOTIFY_CANNOT_OPEN,Nu poți deschide magazinul în faza curentă.
+NOTIFY_STILL_RUNNING,Vânzarea încă rulează.
+NOTIFY_OPEN_BEFORE_NEXT,Deschide magazinul înainte să treci la mâine.
+NOTIFY_STARTED_DAY,A început ziua {0}. Ia decizii de administrare, apoi deschide magazinul.
+NOTIFY_LOOP_RESET,Run-ul a fost resetat la ziua 1.
+NOTIFY_NEW_GAME,A început un joc nou.
+NOTIFY_SPEED,Viteză {0}.
+NOTIFY_NO_PRODUCT,Nu este selectat niciun produs.
+NOTIFY_INVALID_PRICE,Preț invalid.
+NOTIFY_PRICE_UPDATED,Preț actualizat pentru produsul #{0}: {1}.
+NOTIFY_PRICE_FAILED,Nu s-a putut actualiza produsul #{0}.
+NOTIFY_SELECT_PRODUCT_SUPPLIER,Alege un produs și un furnizor.
+NOTIFY_INVALID_QUANTITY,Cantitate invalidă.
+NOTIFY_ORDER_PLACED,Comandă plasată: produs #{0}, cantitate {1}.
+NOTIFY_ORDER_FAILED,Comanda nu a putut fi plasată. Verifică numerarul, produsul și furnizorul.
+NOTIFY_ORDERS_MANAGEMENT,Comenzile se pot plasa doar în Administrare.
+NOTIFY_SHOP_PURCHASED,Achiziția pentru magazin a fost adăugată.
+NOTIFY_SHOP_PURCHASE_FAILED,Nu s-a putut cumpăra articolul pentru magazin.
+NOTIFY_SELECT_SHELF_PRODUCT,Alege un raft și un produs.
+NOTIFY_SHELF_ASSIGNED,Raftul #{0} primește produsul #{1}.
+NOTIFY_SHELF_ASSIGN_FAILED,Raftul nu a putut fi atribuit.
+NOTIFY_STOCK_MOVED,Au fost mutate {0} bucăți pe raftul #{1}.
+NOTIFY_NO_STOCK_MOVED,Nu s-a mutat niciun stoc.
+NOTIFY_SHELVES_REFILLED,Rafturile au fost realimentate cu {0} bucăți.
+NOTIFY_NO_REFILL,Rafturile nu aveau nevoie de stoc sau depozitul era gol.
+NOTIFY_REPORT_COPIED,Raport copiat.
+NOTIFY_HIRED,{0} a fost angajat.
+NOTIFY_HIRE_FAILED,{0} nu a putut fi angajat. Verifică faza și numerarul.
+NOTIFY_FIRED,{0} a fost concediat.
+NOTIFY_FIRE_FAILED,{0} nu a putut fi concediat.
+NOTIFY_EVENT_APPLIED,Decizia de eveniment a fost aplicată.
+NOTIFY_NO_EVENT_DECISION,Nu există decizie de eveniment disponibilă.
+NOTIFY_EVENT_CREATED,Eveniment de test creat.
+NOTIFY_EVENT_CREATE_FAILED,Evenimentul de test poate fi creat doar în Administrare și fără decizie activă.
+NOTIFY_SAVE_TO,Salvat în {0}.
+NOTIFY_LOAD_FROM,Încărcat din {0}.
+NOTIFY_SAVE_FAILED,Salvarea a eșuat: {0}
+NOTIFY_LOAD_FAILED,Încărcarea a eșuat: {0}

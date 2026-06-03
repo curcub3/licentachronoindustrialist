@@ -1,0 +1,16 @@
+.DS_Store
+Thumbs.db
+
+.idea/
+.vs/
+
+**/bin/
+**/obj/
+**/.godot/
+
+Saves/*.json
+!Saves/.gitkeep
+
+*.user
+*.suo
+*.cache

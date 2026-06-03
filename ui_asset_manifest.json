@@ -1,0 +1,365 @@
+{
+  "name": "ChronoIndustrialist UI Asset Implementation Manifest",
+  "version": "0.1.0",
+  "generatedFor": "Godot 4 UI and Figma UI kit handoff",
+  "figmaPluginRoot": "chronoindustrialist_figma_plugin",
+  "godotAssetRoot": "client.godot/Assets/UI",
+  "godotTheme": "client.godot/Themes/ChronoTheme.tres",
+  "mainGodotUiScene": "client.godot/Scenes/UIRoot.tscn",
+  "tokenSources": {
+    "figma": {
+      "colors": "chronoindustrialist_figma_plugin/tokens/colors.json",
+      "typography": "chronoindustrialist_figma_plugin/tokens/typography.json",
+      "spacing": "chronoindustrialist_figma_plugin/tokens/spacing.json",
+      "effects": "chronoindustrialist_figma_plugin/tokens/effects.json"
+    },
+    "godot": {
+      "theme": "client.godot/Themes/ChronoTheme.tres",
+      "designTokens": "client.godot/Assets/UI/design_tokens.json"
+    }
+  },
+  "statusLegend": {
+    "implemented": "Exists in Godot and is used by the current runtime flow.",
+    "implemented_placeholder": "Exists in Godot but uses simple placeholder shapes/text.",
+    "legacy_hidden": "Scene/script exists but current UIManager hides it.",
+    "figma_only": "Exists in Figma/plugin assets but is not wired into Godot yet.",
+    "not_extracted": "Exists as nodes inside UIRoot.tscn, but not as a reusable .tscn component."
+  },
+  "uiElements": [
+    {
+      "id": "button_primary",
+      "figmaComponentName": "Button/primary",
+      "godotPath": "client.godot/Scenes/UI/Buttons/PrimaryButton.tscn",
+      "supportingResources": ["client.godot/Themes/ChronoTheme.tres", "client.godot/Assets/UI/shapes/btn_primary_base.svg"],
+      "expectedStates": ["idle", "hover", "pressed", "disabled", "selected"],
+      "requiredTokens": ["accent", "accentDark", "textPrimary", "radiusMd", "button", "uiStates"],
+      "exportFormatIfNeeded": "SVG optional for documentation or Figma preview; native Control/Theme for Godot runtime",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "button_secondary",
+      "figmaComponentName": "Button/secondary",
+      "godotPath": "client.godot/Scenes/UI/Buttons/SecondaryButton.tscn",
+      "supportingResources": ["client.godot/Themes/ChronoTheme.tres", "client.godot/Assets/UI/shapes/btn_secondary_base.svg"],
+      "expectedStates": ["idle", "hover", "pressed", "disabled", "selected"],
+      "requiredTokens": ["surfaceMuted", "border", "textPrimary", "radiusMd", "button", "uiStates"],
+      "exportFormatIfNeeded": "SVG optional for documentation or Figma preview; native Control/Theme for Godot runtime",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "button_warning",
+      "figmaComponentName": "Button/warning",
+      "godotPath": "client.godot/Scenes/UI/Buttons/WarningButton.tscn",
+      "supportingResources": ["client.godot/Themes/ChronoTheme.tres", "client.godot/Assets/UI/shapes/btn_warning_base.svg"],
+      "expectedStates": ["idle", "hover", "pressed", "disabled", "selected"],
+      "requiredTokens": ["warning", "accentWarm", "danger", "radiusMd", "button", "uiStates.warning"],
+      "exportFormatIfNeeded": "SVG optional for documentation or Figma preview; native Control/Theme for Godot runtime",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "button_disabled",
+      "figmaComponentName": "Button/disabled",
+      "godotPath": "client.godot/Scenes/UI/Buttons/DisabledButton.tscn",
+      "supportingResources": ["client.godot/Themes/ChronoTheme.tres"],
+      "expectedStates": ["disabled", "selected-disabled"],
+      "requiredTokens": ["disabledFill", "disabledText", "border", "radiusMd", "button"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "button_icon",
+      "figmaComponentName": "Button/icon",
+      "godotPath": "client.godot/Scenes/UI/Buttons/IconButton.tscn",
+      "supportingResources": ["client.godot/Themes/ChronoTheme.tres", "client.godot/Assets/UI/icons/*.svg"],
+      "expectedStates": ["idle", "hover", "pressed", "disabled", "selected"],
+      "requiredTokens": ["surface", "accent", "textPrimary", "radiusMd", "icon"],
+      "exportFormatIfNeeded": "SVG icons if later imported as Godot textures",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "button_phase_transition",
+      "figmaComponentName": "Button/phase",
+      "godotPath": "client.godot/Scenes/UI/Buttons/PhaseTransitionButton.tscn",
+      "supportingResources": ["client.godot/Themes/ChronoTheme.tres"],
+      "expectedStates": ["idle", "hover", "pressed", "disabled", "selected"],
+      "requiredTokens": ["success", "accent", "textPrimary", "radiusMd", "button"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "main_menu",
+      "figmaComponentName": "Panel/Management",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#StartupMenu",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["visible", "hidden"],
+      "requiredTokens": ["surface", "surfaceElevated", "border", "textPrimary", "spacingLg", "radiusLg"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "main_menu_buttons",
+      "figmaComponentName": "Button/primary + Button/secondary + Button/warning",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#StartupNewGameButton,StartupLoadFileButton,StartupOptionsButton,StartupExitButton",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs", "client.godot/Visuals/UI/ContextualHelpTooltip.cs"],
+      "expectedStates": ["idle", "hover", "pressed", "focused", "disabled"],
+      "requiredTokens": ["button", "focus", "textPrimary", "tooltip"],
+      "exportFormatIfNeeded": "Optional SVG icons: icon_action_load.svg, icon_action_settings.svg",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "startup_options_popup",
+      "figmaComponentName": "Panel/Tooltip",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#StartupOptionsPopup",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["hidden", "visible"],
+      "requiredTokens": ["surfaceElevated", "border", "textPrimary", "textSecondary", "spacingMd", "radiusLg"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "contextual_help_tooltip",
+      "figmaComponentName": "Panel/Tooltip",
+      "godotPath": "client.godot/Visuals/UI/ContextualHelpTooltip.cs",
+      "supportingResources": ["client.godot/Themes/ChronoTheme.tres#ChronoTooltipPanel", "client.godot/Scenes/UIRoot.tscn#StartupTooltipsToggle"],
+      "expectedStates": ["hidden", "hover-short", "focus-expanded", "disabled"],
+      "requiredTokens": ["ChronoTooltipPanel", "ChronoTooltipTitle", "ChronoTooltipBody", "accent", "textPrimary", "caption", "body"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "new_game_setup",
+      "figmaComponentName": "Panel/Management",
+      "godotPath": "client.godot/Scenes/NewGameSetupPanel.tscn",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["hidden", "visible", "validation-error"],
+      "requiredTokens": ["surface", "border", "textPrimary", "danger", "spacingMd", "body", "button"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "save_slot_popup",
+      "figmaComponentName": "Panel/Management + Card/Inventory Slot",
+      "godotPath": "runtime-created: UIManager.EnsureSaveSlotPopup()",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs", "Saves/slot_1.json", "Saves/slot_2.json", "Saves/slot_3.json"],
+      "expectedStates": ["hidden", "save-mode", "load-mode", "empty-slot-disabled", "unreadable-slot"],
+      "requiredTokens": ["surfaceElevated", "border", "textPrimary", "textSecondary", "disabledFill", "button"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "top_hud_bar",
+      "figmaComponentName": "HUD/1920x1080 Layout > Top Bar",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#TopHotbar",
+      "supportingResources": ["client.godot/Assets/UI/shapes/hud_top_bar_base.svg"],
+      "expectedStates": ["visible", "hidden", "focused-controls"],
+      "requiredTokens": ["surface", "surfaceElevated", "border", "textPrimary", "section", "body", "spacingSm"],
+      "exportFormatIfNeeded": "SVG optional for reference; native Control/Theme for runtime",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "hud_run_info",
+      "figmaComponentName": "Card/Run State",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RunInfoCard,RuntimeHudLabel",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["normal", "focused-help"],
+      "requiredTokens": ["surface", "border", "textPrimary", "textSecondary", "body", "section"],
+      "exportFormatIfNeeded": "Optional icons: icon_economy_lei.svg, icon_economy_vat.svg",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "hud_game_controls",
+      "figmaComponentName": "Button/phase + Button/secondary",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimeOpenShopButton,RuntimeNextDayButton",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["enabled", "disabled", "hover", "pressed", "focused"],
+      "requiredTokens": ["success", "disabledFill", "disabledText", "button", "focus"],
+      "exportFormatIfNeeded": "Optional icons: icon_time_play.svg, icon_time_next_day.svg",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "hud_speed_controls",
+      "figmaComponentName": "Button/icon + Button/secondary",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimePauseSpeedButton,RuntimeNormalSpeedButton,RuntimeFastSpeedButton,RuntimeFasterSpeedButton",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["enabled", "disabled", "hover", "pressed", "focused"],
+      "requiredTokens": ["accent", "surface", "disabledFill", "button", "icon"],
+      "exportFormatIfNeeded": "Optional icons: icon_time_pause.svg, icon_time_play.svg, icon_time_fast.svg",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "hud_system_controls",
+      "figmaComponentName": "Button/icon + Button/secondary",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimeSaveButton,RuntimeLoadButton,RuntimeResetButton",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["enabled", "hover", "pressed", "focused"],
+      "requiredTokens": ["surfaceMuted", "border", "textPrimary", "warning", "button"],
+      "exportFormatIfNeeded": "Optional icons: icon_action_save.svg, icon_action_load.svg, icon_tool_restore.svg",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "left_task_panel",
+      "figmaComponentName": "HUD/1920x1080 Layout > Left Task Panel",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimeControlPanel",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["management", "business", "closing", "disabled-actions"],
+      "requiredTokens": ["surface", "border", "textPrimary", "textSecondary", "spacingMd", "section", "body"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "runtime_operation_tabs",
+      "figmaComponentName": "Button/secondary",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimeManageTabButton,RuntimeStockTabButton,RuntimeStaffTabButton",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["idle", "hover", "pressed", "disabled", "selected-intended"],
+      "requiredTokens": ["surfaceMuted", "accent", "disabledFill", "button"],
+      "exportFormatIfNeeded": "Optional icons: icon_inventory_shelf.svg, icon_inventory_crate.svg, icon_worker_cashier.svg",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "runtime_analysis_tabs",
+      "figmaComponentName": "Button/secondary",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimeEventTabButton,RuntimeReportTabButton,RuntimeStatsTabButton",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["idle", "hover", "pressed", "disabled", "selected-intended"],
+      "requiredTokens": ["surfaceMuted", "warning", "accentWarm", "button"],
+      "exportFormatIfNeeded": "Optional icons: icon_warning_triangle.svg, icon_economy_lei.svg",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "prices_popup",
+      "figmaComponentName": "Panel/Prices",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimePricesPopup",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["hidden", "visible", "invalid-input"],
+      "requiredTokens": ["surfaceElevated", "border", "textPrimary", "danger", "button", "input"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "orders_popup",
+      "figmaComponentName": "Panel/Inventory + Panel/Orders",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimeOrdersPopup",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs", "client.godot/Assets/UI/icons/icon_inventory_crate.svg", "client.godot/Assets/UI/icons/icon_inventory_shelf.svg"],
+      "expectedStates": ["hidden", "visible", "invalid-input", "disabled-controls"],
+      "requiredTokens": ["surfaceElevated", "border", "storage", "delivery", "button", "input"],
+      "exportFormatIfNeeded": "SVG icons optional if imported later",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "staff_popup",
+      "figmaComponentName": "Panel/Management + Card/Worker",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimeStaffPopup",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs", "client.godot/Assets/UI/icons/icon_worker_cashier.svg", "client.godot/Assets/UI/icons/icon_worker_stocker.svg", "client.godot/Assets/UI/icons/icon_worker_manager.svg"],
+      "expectedStates": ["hidden", "visible", "no-candidates", "no-employees"],
+      "requiredTokens": ["surfaceElevated", "border", "success", "button", "body"],
+      "exportFormatIfNeeded": "SVG icons optional if imported later",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "event_popup",
+      "figmaComponentName": "Notification/Warning + Panel/Tooltip",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimeEventPopup",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs", "client.godot/Assets/UI/icons/icon_warning_triangle.svg"],
+      "expectedStates": ["hidden", "visible", "decision-active", "no-decision"],
+      "requiredTokens": ["warning", "danger", "surfaceElevated", "border", "button"],
+      "exportFormatIfNeeded": "SVG icons optional if imported later",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "report_popup",
+      "figmaComponentName": "Panel/Report + Card/Daily Report",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimeReportPopup",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs", "client.godot/Assets/UI/shapes/panel_report_base.svg"],
+      "expectedStates": ["hidden", "visible", "closing-auto-open", "loop-ended"],
+      "requiredTokens": ["surfaceElevated", "accentWarm", "textPrimary", "textSecondary", "body", "section"],
+      "exportFormatIfNeeded": "SVG optional for reference; native Control/Theme for runtime",
+      "implementationStatus": "implemented"
+    },
+    {
+      "id": "notification_runtime",
+      "figmaComponentName": "Notification/Info + Notification/Warning + Notification/Danger",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RuntimeNotificationLabel",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["info", "warning-intended", "danger-intended"],
+      "requiredTokens": ["accent", "warning", "danger", "textPrimary", "body"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented_placeholder"
+    },
+    {
+      "id": "shop_floor_frame",
+      "figmaComponentName": "HUD/1920x1080 Layout > Center Shop Placeholder",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#Shop2DView",
+      "supportingResources": ["client.godot/Visuals/UIManager.cs"],
+      "expectedStates": ["management", "business", "closing"],
+      "requiredTokens": ["background", "surface", "border", "storage", "delivery", "register", "customer"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented_placeholder"
+    },
+    {
+      "id": "shelf_zones",
+      "figmaComponentName": "Card/Inventory Slot",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#ShelfCartridgeZone2D,ShelfConsoleZone2D,ShelfCollectorZone2D",
+      "supportingResources": ["client.godot/Assets/UI/icons/icon_inventory_shelf.svg"],
+      "expectedStates": ["empty", "low-stock", "normal", "full", "active"],
+      "requiredTokens": ["surface", "accent", "warning", "danger", "textPrimary", "inventory"],
+      "exportFormatIfNeeded": "SVG icon optional if imported later",
+      "implementationStatus": "implemented_placeholder"
+    },
+    {
+      "id": "storage_zone",
+      "figmaComponentName": "Panel/Inventory",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#StorageZone2D,StorageFillBar",
+      "supportingResources": ["client.godot/Assets/UI/icons/icon_inventory_crate.svg"],
+      "expectedStates": ["normal", "nearly-full", "full"],
+      "requiredTokens": ["storage", "success", "warning", "danger", "textPrimary"],
+      "exportFormatIfNeeded": "SVG icon optional if imported later",
+      "implementationStatus": "implemented_placeholder"
+    },
+    {
+      "id": "delivery_zone",
+      "figmaComponentName": "Panel/Inventory",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#DeliveryZone2D,DeliveryCrateMarker1,DeliveryCrateMarker2",
+      "supportingResources": ["client.godot/Assets/UI/icons/icon_inventory_crate.svg"],
+      "expectedStates": ["empty", "incoming", "delayed-intended"],
+      "requiredTokens": ["delivery", "warning", "textPrimary", "spacingSm"],
+      "exportFormatIfNeeded": "SVG icon optional if imported later",
+      "implementationStatus": "implemented_placeholder"
+    },
+    {
+      "id": "register_queue",
+      "figmaComponentName": "Panel/Machine + Card/Machine Status",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#RegisterZone2D,QueueLane2D,QueueSpot1,QueueSpot2,QueueSpot3",
+      "supportingResources": ["client.godot/Assets/UI/icons/icon_machine_register.svg"],
+      "expectedStates": ["free", "occupied", "crowded"],
+      "requiredTokens": ["register", "customer", "warning", "danger", "textPrimary"],
+      "exportFormatIfNeeded": "SVG icon optional if imported later",
+      "implementationStatus": "implemented_placeholder"
+    },
+    {
+      "id": "employee_markers",
+      "figmaComponentName": "Card/Worker + Icon/worker",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#CashierMarker,StockerMarker,ManagerMarker",
+      "supportingResources": ["client.godot/Assets/UI/icons/icon_worker_cashier.svg", "client.godot/Assets/UI/icons/icon_worker_stocker.svg", "client.godot/Assets/UI/icons/icon_worker_manager.svg"],
+      "expectedStates": ["hidden", "visible-by-role"],
+      "requiredTokens": ["success", "textPrimary", "worker"],
+      "exportFormatIfNeeded": "SVG icons optional if imported later",
+      "implementationStatus": "implemented_placeholder"
+    },
+    {
+      "id": "customer_markers",
+      "figmaComponentName": "Customer Placeholder Primitive",
+      "godotPath": "client.godot/Scenes/UIRoot.tscn#CustomerMarker1,CustomerMarker2,CustomerMarker3,CustomerMarker4,QueueSpot1,QueueSpot2,QueueSpot3",
+      "supportingResources": [],
+      "expectedStates": ["hidden", "low-traffic", "business-visible"],
+      "requiredTokens": ["customer", "accent", "spacingXs"],
+      "exportFormatIfNeeded": "None",
+      "implementationStatus": "implemented_placeholder"
+    }
+  ],
+  "notes": [
+    "Godot runtime currently uses native Control nodes and ChronoTheme.tres rather than importing Figma SVGs directly.",
+    "Several runtime UI elements are embedded in UIRoot.tscn and are not yet extracted into reusable Godot scenes.",
+    "Figma plugin components are editable design-system infrastructure, not final art exports."
+  ]
+}

@@ -1,0 +1,17 @@
+[gd_scene load_steps=4 format=3 uid="uid://b8o5mmu4fuil8"]
+
+[ext_resource type="Script" path="res://Systems/TickManager.cs" id="1"]
+[ext_resource type="Script" path="res://Loop/LoopManager.cs" id="2"]
+[ext_resource type="PackedScene" uid="uid://boh8vvbktwa67" path="res://Scenes/UIRoot.tscn" id="4"]
+
+[node name="GameMain" type="Node"]
+
+[node name="TickManager" type="Node" parent="."]
+script = ExtResource("1")
+
+[node name="LoopManager" type="Node" parent="."]
+script = ExtResource("2")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="."]
+
+[node name="UIRoot" parent="CanvasLayer" instance=ExtResource("4")]

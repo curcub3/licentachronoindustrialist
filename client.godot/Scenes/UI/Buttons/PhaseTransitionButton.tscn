@@ -1,0 +1,9 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Theme" path="res://Themes/ChronoTheme.tres" id="1"]
+
+[node name="PhaseTransitionButton" type="Button"]
+custom_minimum_size = Vector2(150, 38)
+theme = ExtResource("1")
+theme_type_variation = &"ChronoPhaseTransitionButton"
+text = "Continuă"
