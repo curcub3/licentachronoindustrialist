@@ -4,7 +4,7 @@
 [ext_resource type="Theme" path="res://Themes/ChronoTheme.tres" id="2"]
 
 [node name="TaskChecklistItem" type="PanelContainer"]
-custom_minimum_size = Vector2(0, 32)
+custom_minimum_size = Vector2(0, 40)
 mouse_filter = 0
 theme = ExtResource("2")
 script = ExtResource("1")

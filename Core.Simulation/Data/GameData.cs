@@ -50,6 +50,31 @@ namespace Core.Simulation.Data
         public static GameStartSettings Default => new("Magazin Retro", GameDifficulty.Normal, 14);
     }
 
+    public sealed record OnboardingObjective(
+        string Id,
+        string TitleRo,
+        string SummaryRo
+    );
+
+    public sealed record OnboardingObjectiveState(
+        OnboardingObjective Objective,
+        bool IsCompleted
+    );
+
+    public static class OnboardingObjectiveCatalog
+    {
+        public static IReadOnlyList<OnboardingObjective> Objectives { get; } = new[]
+        {
+            new OnboardingObjective("stock_first_shelf", "Aprovizionează primul raft", "Mută produse din depozit pe raft ca să poată cumpăra clienții."),
+            new OnboardingObjective("serve_first_customer", "Servește primul client", "Deschide magazinul și urmărește primul client până la casă."),
+            new OnboardingObjective("buy_first_shelf", "Cumpără sau plasează un raft nou", "Investește într-un raft nou pentru mai multă capacitate."),
+            new OnboardingObjective("hire_first_worker", "Angajează un lucrător", "Angajează un candidat când ai bani și vrei ajutor în magazin."),
+            new OnboardingObjective("keep_reputation_60", "Menține reputația peste 60%", "Ține rafturile pline și coada scurtă."),
+            new OnboardingObjective("serve_five_customers", "Servește 5 clienți", "Stabilizează prima zi de vânzare."),
+            new OnboardingObjective("finish_first_day", "Finalizează prima zi", "Citește raportul și treci la ziua următoare.")
+        };
+    }
+
     public sealed record EconomicConfig(
         int VatBasisPoints = 2_100,
         int MicroenterpriseTaxBasisPoints = 100,

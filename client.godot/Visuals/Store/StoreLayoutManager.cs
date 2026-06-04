@@ -578,7 +578,7 @@ namespace Client.Scripts.Visuals.Store
                     return new List<Vector2> { anchor, target };
             }
 
-            return new List<Vector2> { target };
+            return new List<Vector2> { start };
         }
 
         private static int FindPointIndex(List<Vector2> points, Vector2 value)

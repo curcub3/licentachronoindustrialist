@@ -162,6 +162,7 @@ namespace Client.Scripts.Visuals
 		private bool _eventsChecked;
 		private bool _showAdvancedReport;
 		private readonly HashSet<string> _completedChecklistTaskIds = new();
+		private readonly Dictionary<Control, ShopNodeLayout> _shopNodeLayouts = new();
 		private PanelContainer? _openShopWarningPopup;
 		private Label? _openShopWarningLabel;
 		private Button? _openShopAnywayButton;
@@ -179,14 +180,19 @@ namespace Client.Scripts.Visuals
 		private Button? _confirmationConfirmButton;
 		private Action? _pendingConfirmationAction;
 		private bool _tutorialSeenThisSession;
-		private bool _tutorialEnabled = true;
+		private bool _tutorialEnabled = false;
 		private TutorialStep _tutorialStep = TutorialStep.None;
 		private bool _tutorialWaitingForAction;
+		private int _lastReputationFeedbackSequence;
+		private int _lastCheckoutFeedbackSequence;
 		[Export] public bool EnableLayoutDebug { get; set; } = false;
 
 		[Export] public string SaveFolderName { get; set; } = "Saves";
 		private const int VisibleProductCount = 7;
 		private const int VisibleSupplierCount = 3;
+		private const float ShopDesignWidth = 960f;
+		private const float ShopDesignHeight = 620f;
+		private const int TutorialStepCount = 11;
 
 		private enum SaveSlotMenuMode
 		{
@@ -197,16 +203,17 @@ namespace Client.Scripts.Visuals
 		private enum TutorialStep
 		{
 			None = -1,
-			Welcome = 0,
-			ReviewCash = 1,
-			OpenInventory = 2,
-			AdjustPrice = 3,
-			InspectStaff = 4,
-			ReviewEvent = 5,
-			OpenStore = 6,
-			ObserveCustomers = 7,
-			ReviewReport = 8,
-			Complete = 9
+			StockShelf = 0,
+			OpenStore = 1,
+			ObserveCustomers = 2,
+			CashierQueue = 3,
+			EmployeesHelp = 4,
+			MoneyEarned = 5,
+			Reputation = 6,
+			BuyFurniture = 7,
+			CurrentObjective = 8,
+			ReviewReport = 9,
+			Complete = 10
 		}
 
 		public override void _Ready()
@@ -219,7 +226,11 @@ namespace Client.Scripts.Visuals
 		public override void _Notification(int what)
 		{
 			if (what == NotificationResized)
+			{
+				ApplyShopSceneScale();
+				_storeLayoutManager?.RefreshLayout();
 				RefreshVisiblePopupBounds();
+			}
 		}
 
 		public override void _Process(double delta)
@@ -250,6 +261,8 @@ namespace Client.Scripts.Visuals
 		{
 			EnsureRuntimePanel();
 			ApplyStaticRomanianText();
+			ConfigureReadableControlSizing();
+			ApplyShopSceneScale();
 			PopulateRuntimeLists();
 			WireRuntimeActions();
 			Refresh();
@@ -258,6 +271,12 @@ namespace Client.Scripts.Visuals
 
 		private void ApplyStaticRomanianText()
 		{
+			if (FindNodeRecursive("StartupSubtitle", this) is Label startupSubtitle)
+			{
+				startupSubtitle.Visible = false;
+				startupSubtitle.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+				startupSubtitle.Text = "";
+			}
 			if (_startupNewGameButton != null)
 				_startupNewGameButton.Text = "Joc nou";
 			if (_startupLoadFileButton != null)
@@ -323,7 +342,7 @@ namespace Client.Scripts.Visuals
 		{
 			if (_newGameDifficultyPicker != null)
 			{
-				int selectedDifficulty = _newGameDifficultyPicker.GetItemCount() > 0 ? _newGameDifficultyPicker.Selected : 1;
+				int selectedDifficulty = _newGameDifficultyPicker.GetItemCount() > 0 ? _newGameDifficultyPicker.Selected : 0;
 				_newGameDifficultyPicker.Clear();
 				_newGameDifficultyPicker.AddItem("Relaxat", (int)GameDifficulty.Relaxed);
 				_newGameDifficultyPicker.AddItem("Normal", (int)GameDifficulty.Normal);
@@ -334,9 +353,55 @@ namespace Client.Scripts.Visuals
 			if (_newGameDurationPicker != null)
 			{
 				_newGameDurationPicker.Clear();
-				_newGameDurationPicker.AddItem("14 zile - campanie completă", GameManager.CampaignDurationDays);
+				_newGameDurationPicker.AddItem("14 zile", GameManager.CampaignDurationDays);
 				_newGameDurationPicker.Selected = 0;
 			}
+		}
+
+		private void ConfigureReadableControlSizing()
+		{
+			ConfigureFillControl(_newGameStoreNameInput);
+			ConfigureFillControl(_newGameDifficultyPicker);
+			ConfigureFillControl(_newGameDurationPicker);
+			ConfigureFillControl(_runtimePriceProductPicker);
+			ConfigureFillControl(_runtimeOrderProductPicker);
+			ConfigureFillControl(_runtimeOrderSupplierPicker);
+			ConfigureFillControl(_runtimeShopCatalogPicker);
+			ConfigureFillControl(_runtimeShelfPicker);
+			ConfigureFillControl(_runtimeShelfProductPicker);
+			ConfigureFillControl(_runtimeCandidatePicker);
+			ConfigureFillControl(_runtimeEmployeePicker);
+			ConfigureFillControl(_runtimePriceInput);
+			ConfigureFillControl(_runtimeOrderQuantityInput);
+			ConfigureFillControl(_runtimeShelfRefillInput);
+
+			ConfigureWrapLabel(_runtimeHudLabel);
+			ConfigureWrapLabel(_runtimeNotificationLabel);
+			ConfigureWrapLabel(_runtimeHintLabel);
+			ConfigureWrapLabel(_runtimeChecklistLabel);
+			ConfigureWrapLabel(_runtimeShelfSummaryLabel);
+			ConfigureWrapLabel(_runtimeStaffSummaryLabel);
+			ConfigureWrapLabel(_runtimeEventLabel);
+			ConfigureWrapLabel(_runtimeReportLabel);
+			ConfigureWrapLabel(_rightContextLabel);
+			ConfigureWrapLabel(_newGameValidationLabel);
+		}
+
+		private static void ConfigureFillControl(Control? control)
+		{
+			if (control == null)
+				return;
+
+			control.SizeFlagsHorizontal = SizeFlags.ExpandFill;
+		}
+
+		private static void ConfigureWrapLabel(Label? label)
+		{
+			if (label == null)
+				return;
+
+			label.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+			label.ClipText = false;
 		}
 
 		private void EnsureRuntimePanel()
@@ -901,7 +966,7 @@ namespace Client.Scripts.Visuals
 				"Intrare" => "Fluxul clienților",
 				_ => "Gestionează produsul și prețul"
 			};
-			zone.MouseEntered += () => zone.Modulate = new Color(1.12f, 1.12f, 1.12f, 1f);
+			zone.MouseEntered += () => zone.Modulate = new Color(1.08f, 0.9f, 0.9f, 1f);
 			zone.MouseExited += () => zone.Modulate = Colors.White;
 			zone.GuiInput += input =>
 			{
@@ -944,7 +1009,6 @@ namespace Client.Scripts.Visuals
 				ShowBoundedPopup(_runtimeOrdersPopup, new Vector2(560, 540));
 			else
 				Notify("Meniul de comenzi lipsește din scenă.");
-			CompleteTutorialStep(TutorialStep.OpenInventory);
 			UpdateChecklistDisplay();
 		}
 
@@ -967,7 +1031,7 @@ namespace Client.Scripts.Visuals
 				ShowBoundedPopup(_runtimeStaffPopup, new Vector2(520, 500));
 			else
 				Notify("Meniul de personal lipsește din scenă.");
-			CompleteTutorialStep(TutorialStep.InspectStaff);
+			CompleteTutorialStep(TutorialStep.EmployeesHelp);
 			UpdateChecklistDisplay();
 		}
 
@@ -979,7 +1043,6 @@ namespace Client.Scripts.Visuals
 				ShowBoundedPopup(_runtimeEventPopup, new Vector2(520, 350));
 			else
 				Notify("Meniul de evenimente lipsește din scenă.");
-			CompleteTutorialStep(TutorialStep.ReviewEvent);
 			UpdateChecklistDisplay();
 		}
 
@@ -1004,8 +1067,15 @@ namespace Client.Scripts.Visuals
 			if (IsTutorialActive())
 			{
 				_runtimeTaskChecklist.Call("add_task", "tutorial_goal", GetTutorialChecklistTitle(), GetTutorialTaskSummary(), false, false, 1);
-				_runtimeTaskChecklist.Call("add_task", "tutorial_loop", "Înțelege bucla zilei", "Verifici magazinul în Administrare, urmărești clienții în Business și citești raportul la Închidere.", _tutorialStep >= TutorialStep.OpenStore, true, 2);
+				_runtimeTaskChecklist.Call("add_task", "tutorial_loop", "Înțelege bucla zilei", "Raft, stoc, clienți, coadă, bani, reputație.", _tutorialStep >= TutorialStep.OpenStore, true, 2);
 				return;
+			}
+
+			foreach (var objective in _game.GetOnboardingObjectives())
+			{
+				_runtimeTaskChecklist.Call("add_task", objective.Objective.Id, objective.Objective.TitleRo, objective.Objective.SummaryRo, objective.IsCompleted, false, 0);
+				if (!objective.IsCompleted)
+					break;
 			}
 
 			if (_game.CurrentDay <= 3)
@@ -1059,14 +1129,15 @@ namespace Client.Scripts.Visuals
 		{
 			return _tutorialStep switch
 			{
-				TutorialStep.Welcome => "Află obiectivul",
-				TutorialStep.ReviewCash => "Privește numerarul",
-				TutorialStep.OpenInventory => "Deschide inventarul",
-				TutorialStep.AdjustPrice => "Schimbă un preț",
-				TutorialStep.InspectStaff => "Verifică personalul",
-				TutorialStep.ReviewEvent => "Deschide evenimentele",
-				TutorialStep.OpenStore => "Deschide magazinul",
+				TutorialStep.StockShelf => "Aprovizionează raftul",
+				TutorialStep.OpenStore => "Deschide",
 				TutorialStep.ObserveCustomers => "Urmărește clienții",
+				TutorialStep.CashierQueue => "Urmărește casa",
+				TutorialStep.EmployeesHelp => "Verifică angajații",
+				TutorialStep.MoneyEarned => "Vezi banii",
+				TutorialStep.Reputation => "Protejează reputația",
+				TutorialStep.BuyFurniture => "Cumpără un raft",
+				TutorialStep.CurrentObjective => "Urmărește obiectivul",
 				TutorialStep.ReviewReport => "Citește raportul",
 				TutorialStep.Complete => "Finalizează tutorialul",
 				_ => "Urmează tutorialul"
@@ -1094,9 +1165,9 @@ namespace Client.Scripts.Visuals
 
 			return _game.CurrentDay switch
 			{
-				1 => "Schimbă un preț, verifică stocul și deschide magazinul.",
-				2 => "Compară furnizorii și comandă produsul cu risc de epuizare.",
-				3 => "Verifică salariile, performanța și moralul înainte de deschidere.",
+				1 => "Aprovizionează un raft, deschide magazinul și servește primul client.",
+				2 => "Cumpără un raft sau comandă stoc dacă rafturile se golesc.",
+				3 => "Verifică angajații și menține reputația peste 60%.",
 				_ => ""
 			};
 		}
@@ -1327,7 +1398,7 @@ namespace Client.Scripts.Visuals
 				return;
 
 			_tutorialSeenThisSession = false;
-			_tutorialStep = TutorialStep.Welcome;
+			_tutorialStep = TutorialStep.StockShelf;
 			_tutorialWaitingForAction = false;
 			ShowTutorialStep();
 		}
@@ -1388,7 +1459,7 @@ namespace Client.Scripts.Visuals
 			_tutorialBodyLabel.Text = body;
 			_tutorialProgressLabel.Text = _tutorialStep == TutorialStep.Complete
 				? "Tutorial complet"
-				: $"Pas {(int)_tutorialStep + 1}/10";
+				: $"Pas {(int)_tutorialStep + 1}/{TutorialStepCount}";
 			_tutorialCloseButton.Text = buttonText;
 			ShowBoundedPopup(_tutorialPopup, new Vector2(520, 280));
 
@@ -1396,61 +1467,65 @@ namespace Client.Scripts.Visuals
 				SetContextPanel("Tutorial", GetTutorialTaskSummary());
 
 			HighlightTutorialTarget();
-			Refresh();
 		}
 
 		private (string Title, string Body, string ButtonText, bool WaitsForAction) GetTutorialStepContent(TutorialStep step)
 		{
 			return step switch
 			{
-				TutorialStep.Welcome => (
-					"Bun venit în ChronoIndustrialist",
-					"Scopul tău este să termini campania de 14 zile cu profit cât mai mare. Bronze, Silver și Gold îți arată cât de bine merge magazinul.",
-					"Continuă",
-					false),
-				TutorialStep.ReviewCash => (
-					"Privește numerarul",
-					"Aici vezi banii disponibili acum. Numerarul crește din vânzări și scade din salarii, comenzi, chirie, utilități și taxe.",
-					"Înțeles",
-					false),
-				TutorialStep.OpenInventory => (
-					"Deschide inventarul",
-					"Produsele îți aduc venit. Rafturile goale înseamnă vânzări pierdute. Apasă pe butonul de stoc/comenzi și verifică rafturile plus depozitul.",
+				TutorialStep.StockShelf => (
+					"Aprovizionează raftul",
+					"Bun venit! Primul pas: aprovizionează un raft. Deschide Comenzi și apasă Realimentează.",
 					"Arată-mi unde",
 					true),
-				TutorialStep.AdjustPrice => (
-					"Ajustează un preț",
-					"Prețurile îți influențează profitul și cererea. Deschide zona de prețuri și schimbă prețul unui produs pentru a continua.",
-					"Am înțeles",
-					true),
-				TutorialStep.InspectStaff => (
-					"Verifică personalul",
-					"Angajații influențează coada, realimentarea și serviciul pentru clienți. Deschide panoul de personal și inspectează echipa.",
-					"Continuă",
-					true),
-				TutorialStep.ReviewEvent => (
-					"Verifică evenimentele",
-					"Evenimentele pot crea riscuri sau oportunități. Deschide panoul de evenimente ca să vezi ce s-a întâmplat și de ce contează.",
-					"Înțeles",
-					true),
 				TutorialStep.OpenStore => (
-					"Deschide magazinul",
-					"Acum poți începe vânzarea. Când stocul, prețurile și personalul par pregătite, apasă «Deschide magazinul».",
+					"Deschide",
+					"Clienții intră prin ușă și caută produse pe rafturi.",
 					"Sunt gata",
 					true),
 				TutorialStep.ObserveCustomers => (
-					"Urmărește activitatea clienților",
-					"Privește coada, mișcarea clienților și viteza vânzării. După ce începe activitatea, trecem la raportul de final de zi.",
-					"Privesc magazinul",
+					"Urmărește clienții",
+					"Clienții merg la rafturi înainte să cumpere. Primii clienți vin mai rar în modul Relaxat.",
+					"Privesc",
 					true),
+				TutorialStep.CashierQueue => (
+					"Casa și coada",
+					"După cumpărături, clienții așteaptă la casă. Coada lungă poate scădea reputația.",
+					"Am înțeles",
+					false),
+				TutorialStep.EmployeesHelp => (
+					"Angajații ajută",
+					"Casierii reduc coada. Stocarii ajută rafturile. Verifică rolurile în Personal.",
+					"Arată-mi unde",
+					true),
+				TutorialStep.MoneyEarned => (
+					"Banii vin din vânzări",
+					"Numerarul crește când vinzi și scade din salarii, comenzi, chirie și taxe.",
+					"Continuă",
+					false),
+				TutorialStep.Reputation => (
+					"Reputația contează",
+					"Reputația scade dacă rafturile sunt goale sau clienții așteaptă prea mult.",
+					"Continuă",
+					false),
+				TutorialStep.BuyFurniture => (
+					"Cumpără un raft nou",
+					"Cumpără rafturi din Comenzi când ai bani. Raftul apare în magazin și crește capacitatea.",
+					"Continuă",
+					false),
+				TutorialStep.CurrentObjective => (
+					"Obiectiv curent",
+					GetCurrentObjectiveText(),
+					"Continuă",
+					false),
 				TutorialStep.ReviewReport => (
 					"Citește raportul zilei",
-					"Raportul îți arată ce s-a întâmplat, ce s-a schimbat și de ce. Deschide raportul zilnic când ziua se închide.",
-					"Înțeles",
+					"Raportul explică banii, clienții serviți și reputația.",
+					"Arată-mi unde",
 					true),
 				TutorialStep.Complete => (
 					"Tutorial complet",
-					"Acum știi bucla principală: verifici stocul, prețurile, personalul și evenimentele, deschizi magazinul, urmărești clienții, apoi citești raportul.",
+					"Bucla de bază: raft, stoc, clienți, casă, raport. Urmărește checklistul.",
 					"Închide",
 					false),
 				_ => ("", "", "Continuă", false)
@@ -1461,31 +1536,41 @@ namespace Client.Scripts.Visuals
 		{
 			return _tutorialStep switch
 			{
-				TutorialStep.Welcome => "Obiectiv: înțelege bucla zilei și păstrează magazinul profitabil.",
-				TutorialStep.ReviewCash => "Privește numerarul din HUD și reține că banii se schimbă din vânzări și costuri.",
-				TutorialStep.OpenInventory => "Deschide panoul de stoc/comenzi și verifică rafturile sau depozitul.",
-				TutorialStep.AdjustPrice => "Schimbă prețul unui produs din panoul de prețuri.",
-				TutorialStep.InspectStaff => "Deschide panoul de personal și verifică salariile, moralul și rolurile.",
-				TutorialStep.ReviewEvent => "Deschide panoul de evenimente și citește explicația riscurilor și avantajelor.",
-				TutorialStep.OpenStore => "Apasă «Deschide magazinul» când verificările sunt gata.",
-				TutorialStep.ObserveCustomers => "Urmărește coada și clienții până începe activitatea de vânzare.",
-				TutorialStep.ReviewReport => "Deschide raportul și compară profitul, venitul și cheltuielile.",
-				TutorialStep.Complete => "Tutorial terminat. Urmărește panoul de obiective când nu ești sigur ce urmează.",
+				TutorialStep.StockShelf => "Mută produse din depozit pe raft.",
+				TutorialStep.OpenStore => "Apasă «Deschide».",
+				TutorialStep.ObserveCustomers => "Urmărește clienții la rafturi.",
+				TutorialStep.CashierQueue => "Urmărește coada de la casă.",
+				TutorialStep.EmployeesHelp => "Deschide Personal și verifică rolurile.",
+				TutorialStep.MoneyEarned => "Urmărește numerarul din HUD.",
+				TutorialStep.Reputation => "Ține rafturile pline și coada scurtă.",
+				TutorialStep.BuyFurniture => "Cumpără un raft nou din Comenzi când ai bani.",
+				TutorialStep.CurrentObjective => GetCurrentObjectiveText(),
+				TutorialStep.ReviewReport => "Deschide raportul la finalul zilei.",
+				TutorialStep.Complete => "Tutorial terminat. Continuă cu checklistul.",
 				_ => "Urmează instrucțiunile tutorialului."
 			};
+		}
+
+		private string GetCurrentObjectiveText()
+		{
+			var current = _game?.GetCurrentOnboardingObjective();
+			if (current == null)
+				return "Obiectiv: continuă să vinzi și citește raportul zilei.";
+
+			return $"Obiectiv: {current.Objective.TitleRo}.";
 		}
 
 		private void HighlightTutorialTarget()
 		{
 			Control? target = _tutorialStep switch
 			{
-				TutorialStep.ReviewCash => _runtimeHudLabel,
-				TutorialStep.OpenInventory => _runtimeStockTabButton,
-				TutorialStep.AdjustPrice => _runtimeManageTabButton,
-				TutorialStep.InspectStaff => _runtimeStaffTabButton,
-				TutorialStep.ReviewEvent => _runtimeEventTabButton,
+				TutorialStep.StockShelf => _runtimeStockTabButton,
 				TutorialStep.OpenStore => _runtimeOpenShopButton,
 				TutorialStep.ObserveCustomers => _queueLane ?? _shop2DView,
+				TutorialStep.CashierQueue => _queueLane ?? _registerZone,
+				TutorialStep.EmployeesHelp => _runtimeStaffTabButton,
+				TutorialStep.MoneyEarned => _runtimeHudLabel,
+				TutorialStep.CurrentObjective => _runtimeTaskChecklist as Control,
 				TutorialStep.ReviewReport => _runtimeReportTabButton,
 				_ => _runtimeHintLabel
 			};
@@ -1624,7 +1709,7 @@ namespace Client.Scripts.Visuals
 				{
 					Name = "FirstRunTutorialPopup",
 					Visible = false,
-					CustomMinimumSize = new Vector2(520, 280)
+					CustomMinimumSize = new Vector2(420, 260)
 				};
 				popupParent.AddChild(_tutorialPopup);
 
@@ -1642,7 +1727,7 @@ namespace Client.Scripts.Visuals
 				_tutorialProgressLabel = new Label
 				{
 					HorizontalAlignment = HorizontalAlignment.Center,
-					Modulate = new Color(0.78f, 0.82f, 0.82f, 1f)
+					Modulate = new Color(0.83f, 0.68f, 0.66f, 1f)
 				};
 				root.AddChild(_tutorialProgressLabel);
 
@@ -1653,12 +1738,25 @@ namespace Client.Scripts.Visuals
 				};
 				root.AddChild(_tutorialTitleLabel);
 
+				var bodyScroll = new ScrollContainer
+				{
+					Name = "TutorialBodyScroll",
+					CustomMinimumSize = new Vector2(0, 96),
+					SizeFlagsHorizontal = SizeFlags.ExpandFill,
+					SizeFlagsVertical = SizeFlags.ExpandFill,
+					HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled
+				};
+				root.AddChild(bodyScroll);
+
 				_tutorialBodyLabel = new Label
 				{
 					Text = "Dimineața primești livrări și evenimente.\nÎn Administrare ajustezi prețuri, comenzi și angajați.\nÎn faza de vânzare magazinul se deschide și vin clienții.\nLa Închidere primești raportul zilei.",
-					AutowrapMode = TextServer.AutowrapMode.WordSmart
+					AutowrapMode = TextServer.AutowrapMode.WordSmart,
+					ClipText = true,
+					CustomMinimumSize = new Vector2(0, 96),
+					SizeFlagsHorizontal = SizeFlags.ExpandFill
 				};
-				root.AddChild(_tutorialBodyLabel);
+				bodyScroll.AddChild(_tutorialBodyLabel);
 
 				var tutorialButtons = new HBoxContainer();
 				tutorialButtons.AddThemeConstantOverride("separation", 10);
@@ -1775,6 +1873,7 @@ namespace Client.Scripts.Visuals
 
 		private void RefreshSaveSlotButtons()
 		{
+			bool hasLoadableSlot = false;
 			for (int i = 0; i < _saveSlotButtons.Length; i++)
 			{
 				var button = _saveSlotButtons[i];
@@ -1782,9 +1881,16 @@ namespace Client.Scripts.Visuals
 					continue;
 
 				int slot = i + 1;
+				bool loadable = IsSaveSlotLoadable(slot);
+				hasLoadableSlot |= loadable;
 				button.Text = BuildSaveSlotText(slot);
-				button.Disabled = _saveSlotMode == SaveSlotMenuMode.Load && !IsSaveSlotLoadable(slot);
+				button.Disabled = _saveSlotMode == SaveSlotMenuMode.Load && !loadable;
 			}
+
+			if (_saveSlotTitleLabel != null)
+				_saveSlotTitleLabel.Text = _saveSlotMode == SaveSlotMenuMode.Load && !hasLoadableSlot
+					? $"{T("BTN_LOAD_GAME")}\nNu există salvări."
+					: _saveSlotMode == SaveSlotMenuMode.Save ? T("BTN_SAVE_GAME") : T("BTN_LOAD_GAME");
 		}
 
 		private bool IsSaveSlotLoadable(int slot)
@@ -1795,7 +1901,9 @@ namespace Client.Scripts.Visuals
 
 			try
 			{
-				new DataPersistenceManager().Load(path);
+				var persistence = new DataPersistenceManager();
+				var save = persistence.Load(path);
+				persistence.Validate(save);
 				return true;
 			}
 			catch
@@ -1881,7 +1989,7 @@ namespace Client.Scripts.Visuals
 				_newGameSetupPanel.Visible = false;
 			if (_gameplayRoot != null)
 				_gameplayRoot.Visible = !isStartup;
-			if (_modalRoot != null)
+			if (_modalRoot != null && isStartup)
 				_modalRoot.Visible = false;
 			if (_topHotbar != null)
 				_topHotbar.Visible = !isStartup;
@@ -1896,6 +2004,10 @@ namespace Client.Scripts.Visuals
 			{
 				_contextualHelp?.Dismiss();
 				HideAllPopups();
+			}
+			else
+			{
+				RefreshModalOverlayVisibility();
 			}
 		}
 
@@ -1995,7 +2107,54 @@ namespace Client.Scripts.Visuals
 			_managerMarker = FindNodeRecursive("ManagerMarker", shop) as ColorRect;
 			_deliveryCrateMarker1 = FindNodeRecursive("DeliveryCrateMarker1", shop) as ColorRect;
 			_deliveryCrateMarker2 = FindNodeRecursive("DeliveryCrateMarker2", shop) as ColorRect;
+			CacheShopSceneLayout();
+			ApplyShopSceneScale();
 			EnsureShopVisualControllers();
+		}
+
+		private void CacheShopSceneLayout()
+		{
+			if (_shop2DView == null || _shopNodeLayouts.Count > 0)
+				return;
+
+			foreach (Node child in _shop2DView.GetChildren())
+			{
+				if (child is not Control control || !ShouldScaleShopChild(control))
+					continue;
+
+				_shopNodeLayouts[control] = new ShopNodeLayout(control.Position, control.Scale);
+			}
+		}
+
+		private void ApplyShopSceneScale()
+		{
+			if (_shop2DView == null)
+				return;
+
+			CacheShopSceneLayout();
+			Vector2 available = _shop2DView.Size;
+			if (available.X <= 0f || available.Y <= 0f)
+				return;
+
+			float scale = Math.Clamp(Math.Min(available.X / ShopDesignWidth, available.Y / ShopDesignHeight), 0.58f, 1f);
+			foreach (var entry in _shopNodeLayouts)
+			{
+				Control control = entry.Key;
+				ShopNodeLayout layout = entry.Value;
+				if (!GodotObject.IsInstanceValid(control))
+					continue;
+
+				control.Position = layout.Position * scale;
+				control.Scale = layout.Scale * scale;
+			}
+		}
+
+		private static bool ShouldScaleShopChild(Control control)
+		{
+			string name = control.Name.ToString();
+			return name is not "ShopBackdrop"
+				&& name is not "ShopFloor"
+				&& !name.EndsWith("VisualLayer", StringComparison.Ordinal);
 		}
 
 		private void EnsureShopVisualControllers()
@@ -2147,32 +2306,32 @@ namespace Client.Scripts.Visuals
 			if (_game == null)
 				return;
 
-			SetShelfColor(_shelfCartridgeZone, GetDominantShelfState(1), new Color(0.26f, 0.21f, 0.16f));
-			SetShelfColor(_shelfConsoleZone, GetDominantShelfState(2), new Color(0.18f, 0.24f, 0.32f));
-			SetShelfColor(_shelfCollectorZone, GetDominantShelfState(3), new Color(0.31f, 0.22f, 0.34f));
+			SetShelfColor(_shelfCartridgeZone, GetDominantShelfState(1), new Color(0.48f, 0.15f, 0.22f));
+			SetShelfColor(_shelfConsoleZone, GetDominantShelfState(2), new Color(0.56f, 0.17f, 0.23f));
+			SetShelfColor(_shelfCollectorZone, GetDominantShelfState(3), new Color(0.63f, 0.19f, 0.25f));
 
 			if (_storageZone != null)
 			{
 				float storageRatio = _game.Inventory.StorageCapacity <= 0 ? 0f : (float)_game.Inventory.TotalStorageUnits / _game.Inventory.StorageCapacity;
 				_storageZone.Color = storageRatio >= 0.95f
-					? new Color(0.65f, 0.14f, 0.1f)
-					: storageRatio >= 0.75f ? new Color(0.62f, 0.48f, 0.12f) : new Color(0.22f, 0.27f, 0.21f);
+					? new Color(0.62f, 0.17f, 0.21f)
+					: storageRatio >= 0.75f ? new Color(0.72f, 0.24f, 0.26f) : new Color(0.46f, 0.15f, 0.22f);
 				if (_storageFillBar != null)
 				{
 					_storageFillBar.Size = new Vector2(Math.Clamp(storageRatio, 0.03f, 1f) * 168f, 8f);
 					_storageFillBar.Color = storageRatio >= 0.95f
-						? new Color(0.92f, 0.22f, 0.18f)
-						: storageRatio >= 0.75f ? new Color(0.95f, 0.68f, 0.18f) : new Color(0.25f, 0.72f, 0.35f);
+						? new Color(0.73f, 0.2f, 0.24f)
+						: storageRatio >= 0.75f ? new Color(0.9f, 0.45f, 0.37f) : new Color(0.78f, 0.28f, 0.29f);
 				}
 			}
 
 			if (_registerZone != null)
-				_registerZone.Color = _game.CurrentPhase == DayPhase.Business ? new Color(0.08f, 0.33f, 0.52f) : new Color(0.08f, 0.18f, 0.34f);
+				_registerZone.Color = _game.CurrentPhase == DayPhase.Business ? new Color(0.6f, 0.18f, 0.24f) : new Color(0.35f, 0.1f, 0.19f);
 
 			if (_queueLane != null)
 			{
 				bool queuePressure = _game.CurrentPhase == DayPhase.Business && _game.CurrentQueueLength >= 4;
-				_queueLane.Color = queuePressure ? new Color(0.65f, 0.18f, 0.16f) : new Color(0.23f, 0.24f, 0.24f);
+				_queueLane.Color = queuePressure ? new Color(0.69f, 0.18f, 0.22f) : new Color(0.52f, 0.16f, 0.23f);
 			}
 		}
 
@@ -2198,9 +2357,9 @@ namespace Client.Scripts.Visuals
 
 			zone.Color = state switch
 			{
-				ShelfState.Empty => new Color(0.48f, 0.08f, 0.08f),
-				ShelfState.LowStock => new Color(0.68f, 0.42f, 0.08f),
-				ShelfState.Full => new Color(0.34f, 0.44f, 0.22f),
+				ShelfState.Empty => new Color(0.52f, 0.13f, 0.19f),
+				ShelfState.LowStock => new Color(0.74f, 0.26f, 0.27f),
+				ShelfState.Full => new Color(0.78f, 0.28f, 0.29f),
 				_ => normal
 			};
 		}
@@ -2297,7 +2456,7 @@ namespace Client.Scripts.Visuals
 					continue;
 
 				bool occupied = _game.CurrentPhase == DayPhase.Business && _game.CurrentQueueLength > i;
-				spot.Color = occupied ? new Color(0.2f, 0.72f, 0.95f) : new Color(0.36f, 0.38f, 0.38f);
+				spot.Color = occupied ? new Color(0.92f, 0.58f, 0.5f) : new Color(0.68f, 0.25f, 0.27f);
 			}
 		}
 
@@ -2405,7 +2564,7 @@ namespace Client.Scripts.Visuals
 			int selected = _runtimeShopCatalogPicker.Selected;
 			_runtimeShopCatalogPicker.Clear();
 			foreach (var item in _game.ShopCatalog)
-				_runtimeShopCatalogPicker.AddItem($"{Localizer.ShopItem(item.Id)} | {item.Type} | {item.Cost} | {DescribeShopCatalogItem(item)}", item.Id);
+				_runtimeShopCatalogPicker.AddItem($"{Localizer.ShopItem(item.Id)} | {CatalogTypeRo(item.Type)} | {item.Cost} | {DescribeShopCatalogItem(item)}", item.Id);
 
 			if (_runtimeShopCatalogPicker.GetItemCount() > 0)
 				_runtimeShopCatalogPicker.Selected = Math.Clamp(selected, 0, _runtimeShopCatalogPicker.GetItemCount() - 1);
@@ -2480,13 +2639,14 @@ namespace Client.Scripts.Visuals
 			Money liveDailyProfit = _game.Economy.DailyRevenue - _game.Economy.DailyExpenses;
 			if (_lastObservedPhase != null && _lastObservedPhase != _game.CurrentPhase)
 				Notify(BuildPhaseTransitionMessage(_lastObservedPhase.Value, _game.CurrentPhase, report));
+			NotifySimulationFeedback();
 
 			if (_runtimeHudLabel != null)
 			{
 				_runtimeHudLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-				_runtimeHudLabel.ClipText = true;
+				_runtimeHudLabel.ClipText = false;
 				_runtimeHudLabel.Text =
-					$"Zi {_game.CurrentDay}/{_game.LoopDayLimit} | {PhaseName(_game.CurrentPhase)} | Cash {_game.Economy.Cash} | Profit run {_game.RunProfit} ({_game.GetProfitMedalName()}) | Azi {liveDailyProfit} | Rep {_game.Customers.Reputation} | Alerte {GetAlertCount()}";
+					$"Zi {_game.CurrentDay}/{_game.LoopDayLimit} | {PhaseName(_game.CurrentPhase)} | Numerar {_game.Economy.Cash} | Profit {_game.RunProfit} ({_game.GetProfitMedalName()}) | Azi {liveDailyProfit} | Reputație {_game.Customers.Reputation} | Alerte {GetAlertCount()}";
 			}
 
 			if (_runtimeReportLabel != null)
@@ -2543,14 +2703,14 @@ namespace Client.Scripts.Visuals
 			if (_runtimeOpenShopButton != null)
 			{
 				_runtimeOpenShopButton.Disabled = !_game.IsLoopActive || _game.CurrentPhase != DayPhase.Management;
-				_runtimeOpenShopButton.Text = "Deschide magazinul";
-				_runtimeOpenShopButton.Modulate = _runtimeOpenShopButton.Disabled ? new Color(0.72f, 0.72f, 0.72f, 1f) : new Color(1.08f, 1.08f, 1.0f, 1f);
+				_runtimeOpenShopButton.Text = "Deschide";
+				_runtimeOpenShopButton.Modulate = Colors.White;
 			}
 			if (_runtimeNextDayButton != null)
 			{
 				_runtimeNextDayButton.Disabled = !_game.IsLoopActive || _game.CurrentPhase != DayPhase.Closing;
-				_runtimeNextDayButton.Text = "Ziua următoare";
-				_runtimeNextDayButton.Modulate = _runtimeNextDayButton.Disabled ? new Color(0.72f, 0.72f, 0.72f, 1f) : new Color(1.08f, 1.08f, 1.0f, 1f);
+				_runtimeNextDayButton.Text = "Ziua urm.";
+				_runtimeNextDayButton.Modulate = Colors.White;
 			}
 			bool speedEnabled = _game.IsLoopActive && _game.CurrentPhase == DayPhase.Business;
 			if (_runtimePauseSpeedButton != null)
@@ -2616,10 +2776,14 @@ namespace Client.Scripts.Visuals
 					: _game.Employees.AverageMorale <= 45
 						? "Moral scăzut: eficiența poate scădea."
 						: "Moral stabil: urmărește-l înainte să apară probleme.";
+				string taskFeedback = _game.Employees.CountRole(EmployeeRole.Stocker) > 0 && !HasLowShelfStock()
+					? "\nStocarii nu au sarcină urgentă: rafturile sunt stabile."
+					: "";
 				_runtimeStaffSummaryLabel.Text =
 					$"Salarii {_game.Employees.TotalSalary}/zi | Moral {_game.Employees.AverageMorale} | {explanation}\n" +
 					$"Impact operațional: casă {_game.CheckoutCapacity}/val | rafturi {_game.DailyRestockCapacity}/zi | protecție moral {operations.MoraleProtection}\n" +
-					(employees.Count > 0 ? $"\n{string.Join("\n", employees)}" : "\nNu există angajați activi.");
+					(employees.Count > 0 ? $"\n{string.Join("\n", employees)}" : "\nNu există angajați activi.") +
+					taskFeedback;
 			}
 
 			if (_runtimeShelfSummaryLabel != null)
@@ -2651,16 +2815,17 @@ namespace Client.Scripts.Visuals
 		{
 			return _tutorialStep switch
 			{
-				TutorialStep.Welcome => "Tutorial: află pe scurt obiectivul sesiunii.",
-				TutorialStep.ReviewCash => "Tutorial: numerarul este resursa ta principală. Fără bani, magazinul se blochează.",
-				TutorialStep.OpenInventory => "Tutorial: deschide panoul de stoc/comenzi ca să vezi ce vinzi și ce lipsește.",
-				TutorialStep.AdjustPrice => "Tutorial: schimbă un preț. Prețurile afectează profitul și cererea.",
-				TutorialStep.InspectStaff => "Tutorial: deschide personalul și vezi cine susține operațiunile zilnice.",
-				TutorialStep.ReviewEvent => "Tutorial: evenimentele schimbă riscul, costurile sau reputația.",
-				TutorialStep.OpenStore => "Tutorial: după verificări, deschide magazinul.",
-				TutorialStep.ObserveCustomers => "Tutorial: privește coada și mișcarea clienților. Acolo vezi dacă operațiunile țin pasul.",
-				TutorialStep.ReviewReport => "Tutorial: raportul îți explică de ce s-au schimbat banii și ce trebuie corectat.",
-				TutorialStep.Complete => "Tutorial: încă un pas și poți continua singur.",
+				TutorialStep.StockShelf => "Tutorial: aprovizionează raftul din depozit.",
+				TutorialStep.OpenStore => "Tutorial: deschide magazinul când primul raft are produse.",
+				TutorialStep.ObserveCustomers => "Tutorial: clienții intră prin ușă și caută produse pe rafturi.",
+				TutorialStep.CashierQueue => "Tutorial: după cumpărături, clienții așteaptă la casă.",
+				TutorialStep.EmployeesHelp => "Tutorial: angajații reduc presiunea pe coadă și rafturi.",
+				TutorialStep.MoneyEarned => "Tutorial: numerarul crește din vânzări și scade din costuri.",
+				TutorialStep.Reputation => "Tutorial: reputația scade din rafturi goale sau așteptare lungă.",
+				TutorialStep.BuyFurniture => "Tutorial: rafturile noi se cumpără din Comenzi.",
+				TutorialStep.CurrentObjective => GetCurrentObjectiveText(),
+				TutorialStep.ReviewReport => "Tutorial: raportul îți explică ziua.",
+				TutorialStep.Complete => "Tutorial: continuă cu checklistul.",
 				_ => ""
 			};
 		}
@@ -2697,9 +2862,12 @@ namespace Client.Scripts.Visuals
 			if (IsTutorialActive())
 				return "Tutorial activ:\n" + GetTutorialTaskSummary();
 
-			string guidedPrefix = _game.CurrentDay <= 3
-				? $"Obiectiv ghidat: {GetGuidedDayObjectiveSummary()}\n"
-				: "";
+			var currentObjective = _game.GetCurrentOnboardingObjective();
+			string guidedPrefix = currentObjective != null
+				? $"Obiectiv: {currentObjective.Objective.TitleRo}\n{currentObjective.Objective.SummaryRo}\n"
+				: _game.CurrentDay <= 3
+					? $"Obiectiv ghidat: {GetGuidedDayObjectiveSummary()}\n"
+					: "";
 
 			if (!_game.IsLoopActive)
 				return guidedPrefix + $"Sesiune încheiată: {DescribeLoopResult(_game.CurrentLoopResult)}. Deschide raportul sau salvează progresul.";
@@ -2712,18 +2880,32 @@ namespace Client.Scripts.Visuals
 
 			var priorities = new List<string>();
 			if (_game.CurrentDecision != null)
-				priorities.Add("1. Rezolvă evenimentul activ.");
+				priorities.Add("Rezolvă evenimentul activ.");
+			if (currentObjective?.Objective.Id == "stock_first_shelf")
+				priorities.Add("Deschide Comenzi și apasă Realimentează.");
+			else if (HasLowShelfStock())
+				priorities.Add("Realimentează produsele aproape epuizate.");
+			if (currentObjective?.Objective.Id == "serve_first_customer")
+				priorities.Add("Apasă Deschide și urmărește primul client până la casă.");
+			if (currentObjective?.Objective.Id == "hire_first_worker")
+				priorities.Add("Deschide Personal și angajează un lucrător potrivit.");
+			if (currentObjective?.Objective.Id == "buy_first_shelf")
+				priorities.Add("Deschide Comenzi și cumpără un raft nou.");
 			if (HasLowShelfStock())
-				priorities.Add("2. Realimentează produsele aproape epuizate.");
+				priorities.Add("Verifică rafturile înainte să deschizi magazinul.");
 			if (_game.Inventory.FreeStorageUnits < 10)
-				priorities.Add("3. Evită comenzile mari; depozitul este aproape plin.");
+				priorities.Add("Evită comenzile mari; depozitul este aproape plin.");
 			if (_game.Employees.CountRole(EmployeeRole.Cashier) <= 0)
-				priorities.Add("4. Angajează un casier înainte de deschidere.");
+				priorities.Add("Angajează un casier înainte de deschidere.");
 
 			if (priorities.Count == 0)
-				priorities.Add("1. Verifică prețurile, stocul, personalul și apoi deschide magazinul.");
+				priorities.Add("Verifică prețurile, stocul, personalul și apoi deschide magazinul.");
 
-			return guidedPrefix + "Următorul pas:\n" + string.Join("\n", priorities);
+			var numberedPriorities = priorities
+				.Distinct()
+				.Select((priority, index) => $"{index + 1}. {priority}");
+
+			return guidedPrefix + "Următorul pas:\n" + string.Join("\n", numberedPriorities);
 		}
 
 		private static string CheckMark(bool done) => done ? "[x]" : "[ ]";
@@ -2735,7 +2917,7 @@ namespace Client.Scripts.Visuals
 			if (_game.CurrentDecision != null)
 				return "Rezolvă evenimentul activ înainte de deschidere. Apoi verifică dacă prețurile și stocul sunt încă bune.";
 			if (HasLowShelfStock())
-				return "Rafturile sunt aproape goale. Realimentează sau comandă stoc înainte să deschizi magazinul.";
+				return "Raftul este gol sau aproape gol. Aprovizionează-l pentru a atrage clienți.";
 			if (_game.Inventory.FreeStorageUnits < 10)
 				return "Depozitul este aproape plin. Prioritizează vânzarea și evită comenzile mari.";
 			if (_game.Employees.Candidates.Count > 0 && _game.Employees.CountRole(EmployeeRole.Cashier) == 0)
@@ -2753,7 +2935,9 @@ namespace Client.Scripts.Visuals
 			if (_game.CurrentDecision != null || (_game.CurrentEvent != null && _game.CurrentEvent.IsActive))
 				alerts.Add("eveniment activ");
 			if (HasLowShelfStock())
-				alerts.Add("stoc redus pe rafturi");
+				alerts.Add("Raftul este gol. Aprovizionează-l pentru a atrage clienți.");
+			if (_game.CurrentPhase == DayPhase.Business && _game.CurrentQueueLength >= 4)
+				alerts.Add("Reputația poate scădea: clienții așteaptă prea mult la casă.");
 			if (_game.Inventory.PendingOrders.Count > 0)
 				alerts.Add("livrări în așteptare");
 			if (_game.Inventory.FreeStorageUnits < 10)
@@ -2761,11 +2945,13 @@ namespace Client.Scripts.Visuals
 			if (_game.Economy.NextTaxDueDay - _game.CurrentDay <= 1)
 				alerts.Add("TVA aproape de plată");
 			if (_game.Employees.CountRole(EmployeeRole.Cashier) <= 0)
-				alerts.Add("fără casier");
+				alerts.Add("Nu ai casier disponibil.");
+			if (_game.CurrentPhase == DayPhase.Management && _game.Employees.CountRole(EmployeeRole.Stocker) > 0 && !HasLowShelfStock())
+				alerts.Add("Stocarii nu au sarcină urgentă.");
 			if (_game.Employees.AverageMorale <= 45)
 				alerts.Add("moral scăzut");
 			if (_game.Customers.Reputation <= 40)
-				alerts.Add("reputație scăzută");
+				alerts.Add("Reputația este scăzută: verifică rafturile și coada.");
 
 			return alerts.Count == 0 ? "Alerte: niciuna" : $"Alerte ({alerts.Count}): " + string.Join(", ", alerts);
 		}
@@ -2866,6 +3052,30 @@ namespace Client.Scripts.Visuals
 				_runtimeEventOptionBButton.Text = decision == null ? "Opțiunea B" : $"B: {Localizer.EventOptionB(decision.Type)}";
 				_runtimeEventOptionBButton.Disabled = !canResolve;
 			}
+		}
+
+		private void NotifySimulationFeedback()
+		{
+			if (_game == null)
+				return;
+
+			var messages = new List<string>();
+			if (_game.LastCheckoutFeedbackSequence > _lastCheckoutFeedbackSequence)
+			{
+				_lastCheckoutFeedbackSequence = _game.LastCheckoutFeedbackSequence;
+				if (!string.IsNullOrWhiteSpace(_game.LastCheckoutFeedbackRo))
+					messages.Add(_game.LastCheckoutFeedbackRo);
+			}
+
+			if (_game.LastReputationFeedbackSequence > _lastReputationFeedbackSequence)
+			{
+				_lastReputationFeedbackSequence = _game.LastReputationFeedbackSequence;
+				if (!string.IsNullOrWhiteSpace(_game.LastReputationFeedbackRo))
+					messages.Add(_game.LastReputationFeedbackRo);
+			}
+
+			if (messages.Count > 0)
+				Notify(string.Join("\n", messages));
 		}
 
 		private string BuildShelfSummary()
@@ -3297,8 +3507,20 @@ namespace Client.Scripts.Visuals
 				ShopCatalogItemType.Shelf => $"raft +{item.ShelfCapacity}",
 				ShopCatalogItemType.Storage => $"depozit +{item.StorageCapacityBonus}",
 				ShopCatalogItemType.Decoration => $"decor +{item.DecorationBonus}",
-				ShopCatalogItemType.Hardware => $"hardware +{item.HardwareBonus}",
+				ShopCatalogItemType.Hardware => $"echipament +{item.HardwareBonus}",
 				_ => "îmbunătățire"
+			};
+		}
+
+		private static string CatalogTypeRo(ShopCatalogItemType type)
+		{
+			return type switch
+			{
+				ShopCatalogItemType.Shelf => "Raft",
+				ShopCatalogItemType.Storage => "Depozit",
+				ShopCatalogItemType.Decoration => "Decor",
+				ShopCatalogItemType.Hardware => "Echipament",
+				_ => "Îmbunătățire"
 			};
 		}
 
@@ -3651,8 +3873,8 @@ namespace Client.Scripts.Visuals
 			Notify(T("NOTIFY_NEW_GAME"));
 			_tutorialSeenThisSession = false;
 			_tutorialStep = TutorialStep.None;
-			ShowTutorialForNewGame();
 			Refresh();
+			ShowTutorialForNewGame();
 		}
 
 		private void ShowTutorialForNewGame()
@@ -3715,7 +3937,6 @@ namespace Client.Scripts.Visuals
 			if (_game.SetProductPrice(productId, price))
 			{
 				Notify(TF("NOTIFY_PRICE_UPDATED", productId, price));
-				CompleteTutorialStep(TutorialStep.AdjustPrice);
 			}
 			else
 				Notify(_game.CurrentPhase == DayPhase.Management ? TF("NOTIFY_PRICE_FAILED", productId) : "Prețurile pot fi schimbate doar în Administrare.");
@@ -3762,8 +3983,23 @@ namespace Client.Scripts.Visuals
 					Notify(TF("NOTIFY_ORDER_PLACED", productId, quantity));
 				}
 			}
+			else if (_game.CurrentPhase != DayPhase.Management)
+				Notify(T("NOTIFY_ORDERS_MANAGEMENT"));
 			else
-				Notify(_game.CurrentPhase == DayPhase.Management ? T("NOTIFY_ORDER_FAILED") : T("NOTIFY_ORDERS_MANAGEMENT"));
+			{
+				var product = _game.Inventory.GetProduct(productId);
+				var supplier = _game.Suppliers.Suppliers.FirstOrDefault(item => item.Id == supplierId);
+				if (product != null && supplier != null)
+				{
+					int costBasisPoints = _game.GetSupplierCostBasisPoints(product, supplier);
+					Money orderCost = Money.FromMicros(product.CostPrice.ToMicros() * quantity * costBasisPoints / 10_000);
+					Notify(!_game.Economy.CanAfford(orderCost) ? "Nu ai suficienți bani pentru această comandă." : T("NOTIFY_ORDER_FAILED"));
+				}
+				else
+				{
+					Notify(T("NOTIFY_ORDER_FAILED"));
+				}
+			}
 
 			Refresh();
 		}
@@ -3789,11 +4025,21 @@ namespace Client.Scripts.Visuals
 			var item = _game.ShopCatalog.FirstOrDefault(entry => entry.Id == catalogItemId);
 
 			if (_game.PurchaseShopCatalogItem(catalogItemId, productId))
+			{
 				Notify(item == null
 					? T("NOTIFY_SHOP_PURCHASED")
 					: $"{FormatSignedMoney(Money.Zero - item.Cost)} • investiție magazin: {DescribeShopCatalogItem(item)}");
+				CompleteTutorialStep(TutorialStep.BuyFurniture);
+			}
 			else
-				Notify(_game.CurrentPhase == DayPhase.Management ? T("NOTIFY_SHOP_PURCHASE_FAILED") : "Achizițiile pentru magazin funcționează doar în Administrare.");
+			{
+				if (_game.CurrentPhase != DayPhase.Management)
+					Notify("Achizițiile pentru magazin funcționează doar în Administrare.");
+				else if (item != null && !_game.Economy.CanAfford(item.Cost))
+					Notify("Nu ai suficienți bani pentru acest obiect.");
+				else
+					Notify("Obiectul nu poate fi plasat sau cumpărat acum.");
+			}
 
 			Refresh();
 		}
@@ -3845,6 +4091,8 @@ namespace Client.Scripts.Visuals
 			int shelfId = _runtimeShelfPicker.GetItemId(_runtimeShelfPicker.Selected);
 			int moved = _game.RefillShelf(shelfId, quantity);
 			Notify(moved > 0 ? TF("NOTIFY_STOCK_MOVED", moved, shelfId) : T("NOTIFY_NO_STOCK_MOVED"));
+			if (moved > 0)
+				CompleteTutorialStep(TutorialStep.StockShelf);
 			Refresh();
 		}
 
@@ -3858,6 +4106,8 @@ namespace Client.Scripts.Visuals
 				movedTotal += _game.RefillShelf(shelf.Id, shelf.Capacity - shelf.CurrentStock);
 
 			Notify(movedTotal > 0 ? TF("NOTIFY_SHELVES_REFILLED", movedTotal) : T("NOTIFY_NO_REFILL"));
+			if (movedTotal > 0)
+				CompleteTutorialStep(TutorialStep.StockShelf);
 			Refresh();
 		}
 
@@ -3889,9 +4139,16 @@ namespace Client.Scripts.Visuals
 			string candidateName = candidate?.Profile.Name ?? $"candidat #{candidateId}";
 
 			if (_game.HireCandidate(candidateId))
+			{
 				Notify(TF("NOTIFY_HIRED", candidateName));
+				CompleteTutorialStep(TutorialStep.EmployeesHelp);
+			}
 			else
-				Notify(TF("NOTIFY_HIRE_FAILED", candidateName));
+			{
+				Notify(candidate != null && !_game.Economy.CanAfford(candidate.Profile.Salary * 2)
+					? "Nu ai suficienți bani pentru acest angajat."
+					: TF("NOTIFY_HIRE_FAILED", candidateName));
+			}
 
 			Refresh();
 		}
@@ -4059,5 +4316,7 @@ namespace Client.Scripts.Visuals
 			value = Money.FromMicros(micros);
 			return true;
 		}
+
+		private sealed record ShopNodeLayout(Vector2 Position, Vector2 Scale);
 	}
 }

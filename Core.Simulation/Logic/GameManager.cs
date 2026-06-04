@@ -58,11 +58,27 @@ namespace Core.Simulation.Logic
         public int CurrentCustomersLostToday => _businessSales.LostCheckoutCustomers + _businessSales.LostStockoutCustomers;
         public int CurrentQueuePressureToday => _businessSales.QueuePressure;
         public IReadOnlyList<int> PurchasedCatalogItemIds => _purchasedCatalogItemIds;
+        public int BusinessTicksElapsedToday => CurrentPhase == DayPhase.Business
+            ? Math.Max(0, BusinessTicksPerDay - BusinessTicksRemaining)
+            : CurrentPhase == DayPhase.Management || CurrentPhase == DayPhase.Morning ? 0 : BusinessTicksPerDay;
+        public bool IsEarlyGracePeriodActive => Difficulty == GameDifficulty.Relaxed
+            && CurrentDay <= RelaxedGraceDays
+            && (CurrentPhase != DayPhase.Business || BusinessTicksElapsedToday < RelaxedGraceBusinessTicks);
+        public int CurrentSalesWaveDemandBasisPoints => GetCurrentSalesWaveDemandBasisPoints();
+        public string LastReputationFeedbackRo { get; private set; } = "";
+        public int LastReputationFeedbackSequence { get; private set; }
+        public string LastCheckoutFeedbackRo { get; private set; } = "";
+        public int LastCheckoutFeedbackSequence { get; private set; }
 
         private const int BusinessTicksPerDay = 1_800;
         private const int SalesWavesPerDay = 5;
         private const int SalesWaveIntervalTicks = BusinessTicksPerDay / SalesWavesPerDay;
         private const int SalesWaveDemandBasisPoints = 10_000 / SalesWavesPerDay;
+        private const int RelaxedStartingCashUnits = 3_200;
+        private const int RelaxedStartingReputation = 65;
+        private const int RelaxedStartingSatisfaction = 60;
+        private const int RelaxedGraceDays = 2;
+        private const int RelaxedGraceBusinessTicks = 1_200;
         private Money _dayStartingCash;
         private SalesSummary _businessSales;
         private readonly Dictionary<int, int> _dayProductSales = new();
@@ -111,15 +127,17 @@ namespace Core.Simulation.Logic
             _purchasedCatalogItemIds.Clear();
             Economy.Cash = Difficulty switch
             {
-                GameDifficulty.Relaxed => Money.FromUnits(2200),
+                GameDifficulty.Relaxed => Money.FromUnits(RelaxedStartingCashUnits),
                 GameDifficulty.Hard => Money.FromUnits(1050),
                 _ => Money.FromUnits(1500)
             };
+            if (Difficulty == GameDifficulty.Relaxed)
+                Customers.SetState(RelaxedStartingReputation, RelaxedStartingSatisfaction, 1);
             ImportCostPressureBasisPoints = ActiveEconomicMood == EconomicMood.ImportSqueeze ? 11_500 : 10_000;
             LastSupportEventEffect = "None";
             _dayStartingCash = Economy.Cash;
             LastDailyReport = DailyReport.Empty(CurrentDay, Economy.Cash);
-            CurrentLoopResult = LoopResult.Active(CurrentDay, Economy.Cash, LoopTargetCash, 50, ReputationFailureThreshold);
+            CurrentLoopResult = LoopResult.Active(CurrentDay, Economy.Cash, LoopTargetCash, Customers.Reputation, ReputationFailureThreshold);
             Inventory.AddProduct(new Product(1, "Retro Cartridge", 50, Money.FromUnits(20), Money.FromUnits(45), 80, 1_500));
             Inventory.AddProduct(new Product(2, "Classic Console", 10, Money.FromUnits(100), Money.FromUnits(180), 60, 6_500));
             Inventory.AddProduct(new Product(3, "Collector's Box", 8, Money.FromUnits(40), Money.FromUnits(85), 45, 8_000));
@@ -127,7 +145,7 @@ namespace Core.Simulation.Logic
             Inventory.AddProduct(new Product(5, "Import RPG", 12, Money.FromUnits(55), Money.FromUnits(120), 58, 8_500));
             Inventory.AddProduct(new Product(6, "Arcade Board", 4, Money.FromUnits(180), Money.FromUnits(340), 35, 7_500));
             Inventory.AddProduct(new Product(7, "Repair Kit", 30, Money.FromUnits(12), Money.FromUnits(28), 65, 500));
-            InitializeDefaultShelves();
+            InitializeDefaultShelves(autoRefill: Difficulty != GameDifficulty.Relaxed);
             Employees.AddEmployee(new EmployeeProfile("Alex", "Manager", 80, Money.FromUnits(85), 80));
             Employees.AddEmployee(new EmployeeProfile("Mara", "Cashier", 70, Money.FromUnits(55), 75));
             Employees.AddEmployee(new EmployeeProfile("Niko", "Stocker", 65, Money.FromUnits(50), 70));
@@ -202,8 +220,10 @@ namespace Core.Simulation.Logic
             if ((CurrentDay - 1) % 7 == 0 && Employees.Candidates.Count == 0)
                 Employees.RefreshCandidates(CurrentDay);
             _dayStorageOverflowUnits += Suppliers.ProcessDeliveries(this);
-            _dayRestockedUnits += Inventory.RefillShelvesFromStorage(DailyRestockCapacity);
+            if (Difficulty != GameDifficulty.Relaxed || CurrentDay > 1)
+                _dayRestockedUnits += Inventory.RefillShelvesFromStorage(DailyRestockCapacity);
             Customers.UpdateDemand(this);
+            ApplyRelaxedEarlyRecoverySupport();
 
             CurrentPhase = DayPhase.Management;
         }
@@ -342,7 +362,7 @@ namespace Core.Simulation.Logic
                 _dayRestockedUnits += moved;
             }
 
-            var wave = Inventory.ProcessSales(this, SalesWaveDemandBasisPoints);
+            var wave = Inventory.ProcessSales(this, CurrentSalesWaveDemandBasisPoints);
             _businessSales += wave;
             CurrentQueueLength = Math.Clamp(wave.LostCheckoutCustomers, 0, 12);
         }
@@ -492,6 +512,18 @@ namespace Core.Simulation.Logic
             return purchased;
         }
 
+        public IReadOnlyList<OnboardingObjectiveState> GetOnboardingObjectives()
+        {
+            return OnboardingObjectiveCatalog.Objectives
+                .Select(objective => new OnboardingObjectiveState(objective, IsOnboardingObjectiveCompleted(objective.Id)))
+                .ToList();
+        }
+
+        public OnboardingObjectiveState? GetCurrentOnboardingObjective()
+        {
+            return GetOnboardingObjectives().FirstOrDefault(objective => !objective.IsCompleted);
+        }
+
         public bool SetProductPrice(int productId, Money salePrice)
         {
             var product = Inventory.GetProduct(productId);
@@ -608,6 +640,69 @@ namespace Core.Simulation.Logic
         public void RecordSupportEventEffect(string effect)
         {
             LastSupportEventEffect = string.IsNullOrWhiteSpace(effect) ? "None" : effect;
+        }
+
+        public void RecordReputationFeedback(int adjustedDelta, ReputationChangeSource source)
+        {
+            if (adjustedDelta == 0)
+                return;
+
+            string sign = adjustedDelta > 0 ? $"+{adjustedDelta}" : adjustedDelta.ToString();
+            string cause = source switch
+            {
+                ReputationChangeSource.Stockout => "rafturile sunt goale",
+                ReputationChangeSource.QueuePressure => "clienții au așteptat prea mult la casă",
+                ReputationChangeSource.CustomerService => "client servit cu succes",
+                ReputationChangeSource.Upgrade => "magazin îmbunătățit",
+                ReputationChangeSource.Overflow => "depozitul este supraîncărcat",
+                ReputationChangeSource.MinorEvent => "eveniment minor",
+                ReputationChangeSource.MajorEvent => "eveniment major",
+                _ => "schimbare în magazin"
+            };
+            LastReputationFeedbackRo = $"Reputație {sign}: {cause}.";
+            LastReputationFeedbackSequence += 1;
+        }
+
+        public void RecordCheckoutFeedback(int unitsSold, Money revenue)
+        {
+            if (unitsSold <= 0 || revenue <= Money.Zero)
+                return;
+
+            string unitText = unitsSold == 1 ? "client servit" : $"{unitsSold} clienți serviți";
+            LastCheckoutFeedbackRo = $"Casă: {unitText}. Venit +{revenue}.";
+            LastCheckoutFeedbackSequence += 1;
+        }
+
+        public Money GetAdjustedPayrollCost(Money payroll)
+        {
+            if (Difficulty != GameDifficulty.Relaxed)
+                return payroll;
+
+            int basisPoints = IsEarlyGracePeriodActive ? 5_000 : 8_000;
+            return Money.FromMicros(payroll.ToMicros() * basisPoints / 10_000);
+        }
+
+        public int GetAdjustedQueuePressureMitigationBasisPoints(int mitigationBasisPoints)
+        {
+            if (Difficulty != GameDifficulty.Relaxed)
+                return mitigationBasisPoints;
+
+            int basisPoints = IsEarlyGracePeriodActive ? 4_500 : 7_500;
+            return Math.Max(1_000, mitigationBasisPoints * basisPoints / 10_000);
+        }
+
+        public int GetGuidedCustomerVisualCount(int desiredCount)
+        {
+            if (Difficulty != GameDifficulty.Relaxed)
+                return desiredCount;
+
+            if (IsEarlyGracePeriodActive)
+                return Math.Min(desiredCount, CurrentCustomersServedToday == 0 ? 2 : 3);
+
+            if (CurrentDay <= 3)
+                return Math.Min(desiredCount, 4);
+
+            return desiredCount;
         }
 
         public bool TriggerPlaceholderEvent()
@@ -785,6 +880,19 @@ namespace Core.Simulation.Logic
 
         private double GetRelaxedLossMultiplier(ReputationChangeSource source)
         {
+            if (IsEarlyGracePeriodActive)
+            {
+                return source switch
+                {
+                    ReputationChangeSource.Stockout => 0.18d,
+                    ReputationChangeSource.QueuePressure => 0.22d,
+                    ReputationChangeSource.Overflow => 0.25d,
+                    ReputationChangeSource.MinorEvent => 0.25d,
+                    ReputationChangeSource.MajorEvent => 0.35d,
+                    _ => 0.25d
+                };
+            }
+
             return source switch
             {
                 ReputationChangeSource.Stockout => 0.40d,
@@ -800,7 +908,7 @@ namespace Core.Simulation.Logic
         {
             return source switch
             {
-                ReputationChangeSource.CustomerService => 1.45d,
+                ReputationChangeSource.CustomerService => IsEarlyGracePeriodActive ? 1.80d : 1.55d,
                 ReputationChangeSource.Upgrade => 1.25d,
                 _ => 1.35d
             };
@@ -811,7 +919,7 @@ namespace Core.Simulation.Logic
             if (Difficulty != GameDifficulty.Relaxed || CurrentDay > 3)
                 return 0;
 
-            return Math.Max(ReputationFailureThreshold, 34 - ((CurrentDay - 1) * 4));
+            return Math.Max(ReputationFailureThreshold, 60 - ((CurrentDay - 1) * 3));
         }
 
         private static EconomicMood PickEconomicMood(int seed)
@@ -834,7 +942,7 @@ namespace Core.Simulation.Logic
             };
         }
 
-        public void InitializeDefaultShelves()
+        public void InitializeDefaultShelves(bool autoRefill = true)
         {
             Inventory.ClearShelves();
             Inventory.AddShelf(new ShelfStock(1, 1, 35, 0, ShelfDisplayType.Basic));
@@ -845,7 +953,51 @@ namespace Core.Simulation.Logic
             Inventory.AddShelf(new ShelfStock(6, 5, 10, 0, ShelfDisplayType.Featured));
             Inventory.AddShelf(new ShelfStock(7, 6, 3, 0, ShelfDisplayType.Premium));
             Inventory.AddShelf(new ShelfStock(8, 7, 24, 0, ShelfDisplayType.Basic));
-            Inventory.RefillShelvesFromStorage();
+            if (autoRefill)
+                Inventory.RefillShelvesFromStorage();
+        }
+
+        private int GetCurrentSalesWaveDemandBasisPoints()
+        {
+            if (Difficulty != GameDifficulty.Relaxed)
+                return SalesWaveDemandBasisPoints;
+
+            if (IsEarlyGracePeriodActive)
+                return SalesWaveDemandBasisPoints * (BusinessTicksElapsedToday < SalesWaveIntervalTicks ? 45 : 65) / 100;
+
+            if (CurrentDay <= 3)
+                return SalesWaveDemandBasisPoints * 80 / 100;
+
+            return SalesWaveDemandBasisPoints;
+        }
+
+        private bool IsOnboardingObjectiveCompleted(string objectiveId)
+        {
+            return objectiveId switch
+            {
+                "stock_first_shelf" => Inventory.Shelves.Any(shelf => shelf.CurrentStock > 0),
+                "serve_first_customer" => CurrentCustomersServedToday > 0 || LastDailyReport.CustomersServed > 0,
+                "hire_first_worker" => Employees.Employees.Count > 3,
+                "buy_first_shelf" => Inventory.Shelves.Count > 8,
+                "keep_reputation_60" => Customers.Reputation >= 60,
+                "serve_five_customers" => CurrentCustomersServedToday >= 5 || LastDailyReport.CustomersServed >= 5,
+                "finish_first_day" => CurrentDay > 1 || (CurrentPhase == DayPhase.Closing && LastDailyReport.Day >= 1),
+                _ => false
+            };
+        }
+
+        private void ApplyRelaxedEarlyRecoverySupport()
+        {
+            if (Difficulty != GameDifficulty.Relaxed || CurrentDay > RelaxedGraceDays)
+                return;
+
+            if (Economy.ProjectedCash >= Money.FromUnits(250))
+                return;
+
+            Money support = Money.FromUnits(450);
+            Economy.Cash += support;
+            LastSupportEventEffect = $"Sprijin de început: +{support}";
+            Customers.ApplyReputationEvent(this, 1, ReputationChangeSource.Upgrade);
         }
 
         public void Dispose()

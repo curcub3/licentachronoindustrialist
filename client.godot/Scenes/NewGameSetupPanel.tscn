@@ -20,6 +20,7 @@ layout_mode = 2
 [node name="SetupCard" type="PanelContainer" parent="SetupCenter"]
 custom_minimum_size = Vector2(380, 360)
 layout_mode = 2
+size_flags_horizontal = 4
 
 [node name="SetupMargin" type="MarginContainer" parent="SetupCenter/SetupCard"]
 layout_mode = 2
@@ -40,10 +41,11 @@ horizontal_alignment = 1
 
 [node name="StoreNameLabel" type="Label" parent="SetupCenter/SetupCard/SetupMargin/SetupRoot"]
 layout_mode = 2
-text = "Numele Magazinului"
+text = "Numele magazinului"
 
 [node name="NewGameStoreNameInput" type="LineEdit" parent="SetupCenter/SetupCard/SetupMargin/SetupRoot"]
 layout_mode = 2
+size_flags_horizontal = 3
 text = "Magazin Retro"
 placeholder_text = "Magazin Retro"
 
@@ -53,13 +55,15 @@ text = "Dificultate"
 
 [node name="NewGameDifficultyPicker" type="OptionButton" parent="SetupCenter/SetupCard/SetupMargin/SetupRoot"]
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="DurationLabel" type="Label" parent="SetupCenter/SetupCard/SetupMargin/SetupRoot"]
 layout_mode = 2
-text = "Durata Rundei"
+text = "Durată joc"
 
 [node name="NewGameDurationPicker" type="OptionButton" parent="SetupCenter/SetupCard/SetupMargin/SetupRoot"]
 layout_mode = 2
+size_flags_horizontal = 3
 
 [node name="NewGameValidationLabel" type="Label" parent="SetupCenter/SetupCard/SetupMargin/SetupRoot"]
 layout_mode = 2

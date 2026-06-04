@@ -145,7 +145,7 @@ namespace Client.Scripts.Visuals.Store
                 Name = "LabelBackdrop",
                 Position = new Vector2(4f, 20f),
                 Size = new Vector2(84f, 30f),
-                Color = new Color(0.05f, 0.06f, 0.08f, 0.72f),
+                Color = new Color(0.22f, 0.07f, 0.14f, 0.72f),
                 MouseFilter = Control.MouseFilterEnum.Ignore
             };
 
@@ -305,10 +305,10 @@ namespace Client.Scripts.Visuals.Store
         {
             return role switch
             {
-                EmployeeRole.Cashier => new Color(0.95f, 0.90f, 0.35f, 1f),
-                EmployeeRole.Stocker => new Color(0.80f, 0.65f, 0.95f, 1f),
-                EmployeeRole.SalesAssociate => new Color(0.96f, 0.62f, 0.35f, 1f),
-                EmployeeRole.Security => new Color(0.92f, 0.38f, 0.38f, 1f),
+                EmployeeRole.Cashier => new Color(0.96f, 0.69f, 0.58f, 1f),
+                EmployeeRole.Stocker => new Color(0.86f, 0.52f, 0.48f, 1f),
+                EmployeeRole.SalesAssociate => new Color(0.92f, 0.58f, 0.5f, 1f),
+                EmployeeRole.Security => new Color(0.82f, 0.3f, 0.29f, 1f),
                 _ => new Color(0.45f, 0.95f, 0.62f, 1f)
             };
         }

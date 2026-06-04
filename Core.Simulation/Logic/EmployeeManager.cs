@@ -122,7 +122,7 @@ namespace Core.Simulation.Logic
                 employee.Efficiency = System.Math.Clamp(employee.Morale / 10 + 50, 10, 100);
             }
 
-            game.Economy.RecordPayrollExpense(TotalSalary);
+            game.Economy.RecordPayrollExpense(game.GetAdjustedPayrollCost(TotalSalary));
         }
 
         public EmployeeOperations GetOperations()

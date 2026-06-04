@@ -123,6 +123,7 @@ namespace Core.Simulation.Logic
         {
             int adjustedDelta = game.GetAdjustedReputationDelta(delta, source);
             Reputation = Math.Clamp(Reputation + adjustedDelta, 0, 100);
+            game.RecordReputationFeedback(adjustedDelta, source);
         }
 
         public void SetState(int reputation, int satisfaction, int demandMultiplier)

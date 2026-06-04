@@ -1,7 +1,0 @@
-{
-  "name": "Chrono Test",
-  "id": "chrono-test",
-  "api": "1.0.0",
-  "main": "code.js",
-  "editorType": ["figma"]
-}

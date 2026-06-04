@@ -212,7 +212,7 @@ namespace Core.Simulation.Logic
                     {
                         lostCheckoutCustomers += demand;
                         queuePressure += demand;
-                        game.Customers.RecordQueuePressure(game, demand, game.Employees.QueuePressureMitigationBasisPoints);
+                        game.Customers.RecordQueuePressure(game, demand, game.GetAdjustedQueuePressureMitigationBasisPoints(game.Employees.QueuePressureMitigationBasisPoints));
                     }
 
                     continue;
@@ -225,6 +225,7 @@ namespace Core.Simulation.Logic
                     RemoveShelfStock(product.Id, sold);
                     Money revenue = product.SalePrice * sold;
                     game.Economy.RecordRevenue(revenue);
+                    game.RecordCheckoutFeedback(sold, revenue);
                     game.RecordProductSales(product.Id, sold);
                     game.Customers.RecordPurchase(game, product, sold);
                     product.Popularity = System.Math.Min(100, product.Popularity + sold / 2);
@@ -234,7 +235,7 @@ namespace Core.Simulation.Logic
                     {
                         lostCheckoutCustomers += unmetDemand;
                         queuePressure += unmetDemand;
-                        game.Customers.RecordQueuePressure(game, unmetDemand, game.Employees.QueuePressureMitigationBasisPoints);
+                        game.Customers.RecordQueuePressure(game, unmetDemand, game.GetAdjustedQueuePressureMitigationBasisPoints(game.Employees.QueuePressureMitigationBasisPoints));
                     }
                     else if (unmetDemand > 0 && GetShelvesForProduct(product.Id).Sum(s => s.CurrentStock) <= 0)
                     {

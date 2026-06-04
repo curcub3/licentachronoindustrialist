@@ -100,7 +100,7 @@ namespace Client.Scripts.Visuals.Store
                             FurnitureKind.Placeholder,
                             _layout.GetStorageFurnitureSlot(storageSlot),
                             "Depozit",
-                            new Color(0.40f, 0.54f, 0.28f, 0.95f),
+                            new Color(0.78f, 0.28f, 0.29f, 0.95f),
                             null);
                         storageSlot++;
                         break;
@@ -109,7 +109,7 @@ namespace Client.Scripts.Visuals.Store
                             FurnitureKind.Placeholder,
                             _layout.GetDecorationFurnitureSlot(decorationSlot),
                             "Neon",
-                            new Color(0.24f, 0.78f, 0.86f, 0.95f),
+                            new Color(0.86f, 0.52f, 0.48f, 0.95f),
                             null);
                         decorationSlot++;
                         break;
@@ -118,7 +118,7 @@ namespace Client.Scripts.Visuals.Store
                             FurnitureKind.Placeholder,
                             _layout.GetHardwareFurnitureSlot(catalogItemId, scannerSlot),
                             "Scanner",
-                            new Color(0.20f, 0.58f, 0.92f, 0.95f),
+                            new Color(0.92f, 0.58f, 0.5f, 0.95f),
                             null);
                         scannerSlot++;
                         break;
@@ -127,7 +127,7 @@ namespace Client.Scripts.Visuals.Store
                             FurnitureKind.Placeholder,
                             _layout.GetHardwareFurnitureSlot(catalogItemId, cartSlot),
                             "Cărucior",
-                            new Color(0.86f, 0.62f, 0.26f, 0.95f),
+                            new Color(0.82f, 0.3f, 0.29f, 0.95f),
                             null);
                         cartSlot++;
                         break;

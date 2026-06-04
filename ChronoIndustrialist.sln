@@ -4,10 +4,16 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "client.godot", "client.godot\client.godot.csproj", "{43889F17-9B5D-4AE8-A75B-634C7615FEFD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D0B6D3F5-5481-46A1-9ADB-F7FA97C458C2} = {D0B6D3F5-5481-46A1-9ADB-F7FA97C458C2}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Simulation", "Core.Simulation\Core.Simulation.csproj", "{D0B6D3F5-5481-46A1-9ADB-F7FA97C458C2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Simulation.Tests", "Core.Simulation.Tests\Core.Simulation.Tests.csproj", "{359C5BB6-543D-4937-8F30-E46D313E4A94}"
+	ProjectSection(ProjectDependencies) = postProject
+		{D0B6D3F5-5481-46A1-9ADB-F7FA97C458C2} = {D0B6D3F5-5481-46A1-9ADB-F7FA97C458C2}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -14,6 +14,10 @@ namespace Client.Scripts.Loop
 
         public override void _Ready()
         {
+            TickManager ??= GetNodeOrNull<TickManager>("../TickManager");
+            if (TickManager == null)
+                GD.PrintErr("LoopManager: TickManager was not assigned and could not be found.");
+
             _snapshotManager = new SnapshotManager(10000);
         }
 

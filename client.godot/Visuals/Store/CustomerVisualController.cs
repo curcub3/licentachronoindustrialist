@@ -40,7 +40,7 @@ namespace Client.Scripts.Visuals.Store
                 return;
             }
 
-            int desiredActiveCustomers = CalculateDesiredCustomerCount(_game);
+            int desiredActiveCustomers = _game.GetGuidedCustomerVisualCount(CalculateDesiredCustomerCount(_game));
             int activeCount = _actors.Count(actor => actor.Active);
 
             while (activeCount < desiredActiveCustomers)
@@ -247,10 +247,10 @@ namespace Client.Scripts.Visuals.Store
             actor.Root.Position = _layout.ClampPosition(actor.Position, actor.Root.Size);
             actor.Body.Color = actor.State switch
             {
-                CustomerVisualState.Queueing => new Color(0.98f, 0.76f, 0.24f, 1f),
-                CustomerVisualState.Paying => new Color(0.98f, 0.88f, 0.46f, 1f),
-                CustomerVisualState.Leaving => new Color(0.56f, 0.64f, 0.70f, 0.95f),
-                CustomerVisualState.Deciding => new Color(0.42f, 0.84f, 0.96f, 1f),
+                CustomerVisualState.Queueing => new Color(0.9f, 0.45f, 0.37f, 1f),
+                CustomerVisualState.Paying => new Color(0.97f, 0.72f, 0.58f, 1f),
+                CustomerVisualState.Leaving => new Color(0.75f, 0.54f, 0.56f, 0.95f),
+                CustomerVisualState.Deciding => new Color(0.93f, 0.55f, 0.47f, 1f),
                 _ => new Color(0.20f, 0.72f, 0.95f, 1f)
             };
         }

@@ -80,11 +80,11 @@ func _build() -> void:
 
 	_title_label = Label.new()
 	_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_title_label.clip_text = true
+	_title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	row.add_child(_title_label)
 
 	_meta_label = Label.new()
-	_meta_label.clip_text = true
+	_meta_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	row.add_child(_meta_label)
 
 
