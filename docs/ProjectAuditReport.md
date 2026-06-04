@@ -4,72 +4,79 @@ Date: 2026-06-05
 
 ## 1. Critical issues found
 
-- The root solution fails under default MSBuild max-cpu scheduling with no surfaced compiler diagnostics when the Godot C# project and `Core.Simulation` are built concurrently.
-- The store visual path fallback could return a direct final target after route discovery failed, which allowed a last-resort movement segment to cross shelf obstacles.
-- `docs/` was missing, so the requested audit report location did not exist.
+- The first-run tutorial popup could open immediately after starting a game and grow far beyond the viewport, covering the runtime UI and making normal controls appear broken.
+- Runtime refresh logic hid `_modalRoot` unconditionally when leaving startup mode, which could break popup-driven workflows and modal visibility state.
+- `LoopManager` depended on an editor-assigned `TickManager` reference; fresh scene loads could miss the sibling `TickManager` and skip T=0 baseline capture.
+- `StoreLayoutManager.BuildFallbackPath` could return a direct final target after path discovery failed, allowing a last-resort customer/employee movement segment to cross shelf obstacles.
+- Root solution restore/build is sensitive to MSBuild solution-level parallelism with the Godot SDK project.
 
 ## 2. Build errors fixed
 
-- Added `Directory.Solution.props` to disable parallel solution restore.
-- Added explicit solution dependencies from `client.godot` and `Core.Simulation.Tests` to `Core.Simulation`.
+- Added `Directory.Solution.props` to disable parallel solution restore. `dotnet restore ChronoIndustrialist.sln` now succeeds.
 - Verified the full C# solution builds with serialized MSBuild scheduling:
   - `dotnet build ChronoIndustrialist.sln -m:1`
   - Result: succeeded, 0 warnings, 0 errors.
 
-Remaining build warning: plain `dotnet build ChronoIndustrialist.sln` still exits nonzero under MSBuild max-cpu scheduling with 0 warnings and 0 errors. Use `-m:1` for reliable root solution builds unless the Godot SDK scheduling issue is resolved.
+Remaining build issue: plain `dotnet build ChronoIndustrialist.sln` still exits nonzero after restore with 0 warnings and 0 errors. Use `dotnet build ChronoIndustrialist.sln -m:1` until the Godot SDK/MSBuild solution scheduling issue is resolved.
 
 ## 3. Runtime errors fixed
 
-- Hardened `StoreLayoutManager.BuildFallbackPath` so failed route discovery returns the current safe start point instead of a blocked direct target. This prevents customers and employees from being instructed to walk through shelves in fallback conditions.
-- Verified Godot headless launch succeeds:
-  - `--resolution 1280x720`
-  - `--resolution 1600x900`
-  - `--resolution 1920x1080`
+- `LoopManager` now self-wires `../TickManager` when the exported reference is not assigned and logs a clear error if it still cannot be found.
+- `UIManager.SetStartupMode(false)` now refreshes modal overlay visibility instead of forcibly hiding the modal root during runtime.
+- The oversized automatic first-run tutorial overlay is disabled by default. The tutorial popup body is also bounded inside a scroll container for safer future re-enable work.
+- `StoreLayoutManager.BuildFallbackPath` now returns the safe start point when no unobstructed path can be found.
 
 ## 4. UI issues fixed
 
-- No UI scene edits were required in this pass.
-- Static audit found the top menu, left menu, and main game area are container-driven and within minimum-size limits for 1280x720 and larger.
-- Headless scene loads at 1280x720, 1600x900, and 1920x1080 completed without runtime errors.
+- Removed the blocking runtime first-run tutorial overlay from the default new-game path.
+- Preserved modal-root state for runtime popups instead of hiding it during every runtime refresh.
+- Verified startup-to-new-game runtime UI at:
+  - 1280x720
+  - 1600x900
+  - 1920x1080
+- Smoke validation confirmed `TopMenu`, `LeftMenu`, and `MainGameArea` are visible and do not overlap after starting a game.
 
 ## 5. Store visualization issues fixed
 
-- Path fallback now avoids shelf-crossing movement when no safe path can be found.
-- Existing shelf visualization already duplicates original shelf scene controls via `CreateShelfVisualFromOriginal`.
+- Customers and employees no longer receive a fallback direct path through shelf obstacles when pathfinding fails.
+- Existing shelf visualization continues to duplicate original shelf scene controls through `CreateShelfVisualFromOriginal`.
 - No generated shelf placeholder references were found in runtime store visualization code.
-- Existing tests cover purchased shelf creation, shelf visual reuse, employee labels/roles, save/load of furniture, and customer/employee pathing contracts.
+- Existing regression coverage verifies purchased shelf creation, original shelf visual reuse, employee name/role labels, furniture save/load, and customer/employee pathing contracts.
 
 ## 6. Files modified
 
-- `ChronoIndustrialist.sln`
 - `Directory.Solution.props`
+- `client.godot/Loop/LoopManager.cs`
+- `client.godot/Visuals/UIManager.cs`
 - `client.godot/Visuals/Store/StoreLayoutManager.cs`
 - `Core.Simulation.Tests/RegressionCoverageTests.cs`
 - `docs/ProjectAuditReport.md`
 
 ## 7. Files removed
 
-- None by this audit pass.
+- None from the repository by this audit pass.
 
-Note: the worktree already contained many deleted UI asset files before this pass. I did not revert or remove those user-side changes.
+Note: the worktree already contained deleted UI assets and unrelated edits before this pass. Those were not reverted.
 
 ## 8. Remaining warnings
 
-- Default parallel `dotnet build ChronoIndustrialist.sln` still fails without diagnostics; serialized build succeeds.
-- UI validation was performed through scene inspection and headless launch, not interactive screenshot inspection.
-- Runtime store behavior was smoke-validated by startup and covered by tests, but full customer purchase loops were not observed interactively.
+- Plain `dotnet build ChronoIndustrialist.sln` still fails silently; serialized `-m:1` build succeeds.
+- UI validation was performed through Godot headless scene execution, not GUI screenshot comparison.
+- Full interactive customer purchase loops were not observed manually in the editor during this pass.
+- The automatic tutorial remains disabled until it receives dedicated visual QA.
 
 ## 9. Remaining technical debt
 
-- `TriggerPlaceholderEvent` and the visible test-event workflow remain active. They appear intentional in existing tests but should be reviewed before MVP.
+- The first-run tutorial needs to be redesigned as a non-blocking or carefully bounded flow before re-enabling.
+- `TriggerPlaceholderEvent` and the visible test-event workflow remain active and should be reviewed before MVP.
 - Store furniture non-shelf upgrades still use simple placeholder visuals.
-- Store layout still uses runtime scaling for fixed-position shop children.
-- The root worktree contains substantial pre-existing edits and deleted assets; those should be reviewed as a separate change set.
+- Store layout still relies on runtime scaling for fixed-position shop children.
+- The pre-existing dirty worktree should be split into reviewable changes before release hardening.
 
 ## 10. Recommendations for MVP completion
 
-- Make `dotnet build ChronoIndustrialist.sln -m:1` the documented CI/build command for now, or split Godot client and simulation test builds into separate CI steps.
-- Add an automated Godot smoke scene that starts a relaxed game, opens the shop, advances several business ticks, saves, loads, and asserts no runtime errors.
-- Add visual regression screenshots for 1280x720, 1600x900, and 1920x1080 once a GUI-capable test runner is available.
-- Replace or formalize the active placeholder event/test button before MVP.
+- Document `dotnet build ChronoIndustrialist.sln -m:1` as the reliable local/CI solution build command, or split client and simulation builds into separate CI steps.
+- Add a committed Godot smoke test that starts a game, opens the shop, advances business ticks, saves, loads, and asserts no runtime errors.
+- Add GUI screenshot regression checks for 1280x720, 1600x900, and 1920x1080.
+- Re-enable the tutorial only after it passes viewport-bounds checks in all target resolutions.
 - Add direct tests for maximum purchased shelf count and dynamic shelf slot visibility.

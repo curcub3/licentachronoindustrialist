@@ -360,6 +360,29 @@ public sealed class RegressionCoverageTests
     }
 
     [Fact]
+    public void RuntimeUiDoesNotAutoOpenFirstRunTutorialOverlay()
+    {
+        string projectRoot = FindRepoRoot();
+        string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
+
+        Assert.Contains("private bool _tutorialEnabled = false;", uiManager);
+        Assert.Contains("Name = \"TutorialBodyScroll\"", uiManager);
+        Assert.Contains("HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled", uiManager);
+        Assert.DoesNotContain("Refresh();\n\t\t\tShowTutorialStep();", uiManager);
+        Assert.Contains("RefreshModalOverlayVisibility();", uiManager);
+    }
+
+    [Fact]
+    public void LoopManagerSelfWiresSiblingTickManager()
+    {
+        string projectRoot = FindRepoRoot();
+        string loopManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Loop", "LoopManager.cs"));
+
+        Assert.Contains("TickManager ??= GetNodeOrNull<TickManager>(\"../TickManager\");", loopManager);
+        Assert.Contains("LoopManager: TickManager was not assigned and could not be found.", loopManager);
+    }
+
+    [Fact]
     public void SaveSlotMenuUsesRepoSavesAndSafeRomanianFailureFeedback()
     {
         string projectRoot = FindRepoRoot();
