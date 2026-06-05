@@ -66,6 +66,7 @@ namespace Core.Simulation.Data
         public static IReadOnlyList<OnboardingObjective> Objectives { get; } = new[]
         {
             new OnboardingObjective("stock_first_shelf", "Aprovizionează primul raft", "Mută produse din depozit pe raft ca să poată cumpăra clienții."),
+            new OnboardingObjective("set_first_price", "Setează prețul unui produs", "Deschide Prețuri, alege un produs și confirmă un preț valid."),
             new OnboardingObjective("serve_first_customer", "Servește primul client", "Deschide magazinul și urmărește primul client până la casă."),
             new OnboardingObjective("buy_first_shelf", "Cumpără sau plasează un raft nou", "Investește într-un raft nou pentru mai multă capacitate."),
             new OnboardingObjective("hire_first_worker", "Angajează un lucrător", "Angajează un candidat când ai bani și vrei ajutor în magazin."),

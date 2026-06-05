@@ -96,12 +96,16 @@ namespace Client.Scripts.Visuals.Store
             if (_game == null)
                 return;
 
+            IReadOnlyList<Vector2>? customerFocusPoints = null;
             foreach (EmployeeActor actor in _actors.Values)
             {
                 if (!actor.Root.Visible)
                     continue;
 
-                Vector2 target = GetTarget(actor);
+                if (actor.Role == EmployeeRole.SalesAssociate)
+                    customerFocusPoints ??= _customerController.GetCustomerFocusPoints();
+
+                Vector2 target = GetTarget(actor, customerFocusPoints ?? Array.Empty<Vector2>());
                 if (MoveActor(actor, target, actor.Speed, (float)delta) && actor.Position.DistanceTo(target) <= 3f)
                 {
                     actor.HoldTimer += (float)delta;
@@ -119,6 +123,16 @@ namespace Client.Scripts.Visuals.Store
                 }
 
                 actor.Root.Position = _layout.ClampPosition(actor.Position - new Vector2(actor.Root.Size.X * 0.5f, 0f), actor.Root.Size);
+            }
+        }
+
+        public void InvalidatePaths()
+        {
+            foreach (EmployeeActor actor in _actors.Values)
+            {
+                actor.Path.Clear();
+                actor.PathIndex = 0;
+                actor.FinalTarget = Vector2.Inf;
             }
         }
 
@@ -194,13 +208,13 @@ namespace Client.Scripts.Visuals.Store
             };
         }
 
-        private Vector2 GetTarget(EmployeeActor actor)
+        private Vector2 GetTarget(EmployeeActor actor, IReadOnlyList<Vector2> customerFocusPoints)
         {
             return actor.Role switch
             {
                 EmployeeRole.Cashier => GetCashierTarget(actor),
                 EmployeeRole.Stocker => GetStockerTarget(actor),
-                EmployeeRole.SalesAssociate => GetSalesAssociateTarget(actor),
+                EmployeeRole.SalesAssociate => GetSalesAssociateTarget(actor, customerFocusPoints),
                 EmployeeRole.Security => _layout.GetSecurityPatrolPoint(actor.PathStep + actor.RoleSlot),
                 _ => _layout.GetManagerPoint(actor.PathStep + actor.RoleSlot)
             };
@@ -223,9 +237,8 @@ namespace Client.Scripts.Visuals.Store
             return _layout.GetStockerShelfPoint(actor.TargetProductId, actor.RoleSlot, _game);
         }
 
-        private Vector2 GetSalesAssociateTarget(EmployeeActor actor)
+        private Vector2 GetSalesAssociateTarget(EmployeeActor actor, IReadOnlyList<Vector2> customerFocusPoints)
         {
-            IReadOnlyList<Vector2> customerFocusPoints = _customerController.GetCustomerFocusPoints();
             if (customerFocusPoints.Count > 0 && actor.PathStep % 3 == 2)
             {
                 Vector2 focusPoint = customerFocusPoints[(actor.PathStep + actor.RoleSlot) % customerFocusPoints.Count];

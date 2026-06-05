@@ -75,6 +75,16 @@ namespace Client.Scripts.Visuals.Store
             }
         }
 
+        public void InvalidatePaths()
+        {
+            foreach (CustomerActor actor in _actors)
+            {
+                actor.Path.Clear();
+                actor.PathIndex = 0;
+                actor.FinalTarget = Vector2.Inf;
+            }
+        }
+
         public IReadOnlyList<Vector2> GetCustomerFocusPoints()
         {
             return _actors

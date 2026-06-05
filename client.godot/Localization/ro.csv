@@ -159,9 +159,9 @@ NOTIFY_STARTED_DAY,A început ziua {0}. Ia decizii de administrare, apoi deschid
 NOTIFY_LOOP_RESET,Run-ul a fost resetat la ziua 1.
 NOTIFY_NEW_GAME,A început un joc nou.
 NOTIFY_SPEED,Viteză {0}.
-NOTIFY_NO_PRODUCT,Nu este selectat niciun produs.
-NOTIFY_INVALID_PRICE,Preț invalid.
-NOTIFY_PRICE_UPDATED,Preț actualizat pentru produsul #{0}: {1}.
+NOTIFY_NO_PRODUCT,Nu există produs selectat.
+NOTIFY_INVALID_PRICE,Introdu un preț valid.
+NOTIFY_PRICE_UPDATED,Preț actualizat pentru {0}.
 NOTIFY_PRICE_FAILED,Nu s-a putut actualiza produsul #{0}.
 NOTIFY_SELECT_PRODUCT_SUPPLIER,Alege un produs și un furnizor.
 NOTIFY_INVALID_QUANTITY,Cantitate invalidă.

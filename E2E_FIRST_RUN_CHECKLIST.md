@@ -42,7 +42,27 @@ Expected result: `Aprovizionează primul raft` completes and next objective appe
 
 Failure signs: No shelf controls, no confirmation, no objective update.
 
-## 5. Open Store
+## 5. Set First Price
+
+Action: Open `Prețuri`, select one product, enter a valid price, and confirm.
+
+Expected UI: The price popup clearly shows the selected product name.
+
+Expected result: Feedback says `Preț actualizat pentru [produs].`, only that product changes, and the popup closes.
+
+Failure signs: Product name is missing, the popup stays open after confirm, or another product changes.
+
+## 6. Confirm Price Cancel And Errors
+
+Action: Reopen `Prețuri`, change the text, press `Închide` or Escape, then reopen and try empty/non-number/negative/unreasonable input.
+
+Expected UI: Cancel closes without changing the product. Invalid input shows `Introdu un preț valid.` Missing selection shows `Nu există produs selectat.`
+
+Expected result: No crash, no stale target, and no second product is affected.
+
+Failure signs: Invalid input crashes, cancel applies a price, or repeated opens apply to an old product.
+
+## 7. Open Store
 
 Action: Press `Deschide`.
 
@@ -52,7 +72,7 @@ Expected result: Customer flow starts slowly in Relaxed mode.
 
 Failure signs: Harsh penalties before first sale, no visible customer path, no hint if shelves are empty.
 
-## 6. Watch First Customer Enter
+## 8. Watch First Customer Enter
 
 Action: Observe the store view.
 
@@ -62,7 +82,7 @@ Expected result: Customer browses before checkout.
 
 Failure signs: Customer teleports with no context, walks through shelves/walls, or never appears.
 
-## 7. Complete Checkout
+## 9. Complete Checkout
 
 Action: Wait for the first customer to reach the cashier.
 
@@ -72,7 +92,7 @@ Expected result: Checkout completes and feedback appears, such as `Casă: client
 
 Failure signs: No checkout feedback, money does not change, customer gets stuck.
 
-## 8. Confirm Money Increases
+## 10. Confirm Money Increases
 
 Action: Compare HUD projected money/profit after checkout.
 
@@ -82,7 +102,7 @@ Expected result: Money or daily revenue increases from the sale.
 
 Failure signs: No visible cause/effect for money earned.
 
-## 9. Confirm Objective Advances
+## 11. Confirm Objective Advances
 
 Action: Read checklist after first customer.
 
@@ -92,7 +112,7 @@ Expected result: Next objective is about buying/placing a shelf or hiring when a
 
 Failure signs: Checklist does not update or shows unrelated advanced systems first.
 
-## 10. Confirm Reputation Feedback
+## 12. Confirm Reputation Feedback
 
 Action: Create or observe a queue/stock issue, or serve customers successfully.
 
@@ -102,7 +122,17 @@ Expected result: Examples: `Reputație -1: clienții au așteptat prea mult la c
 
 Failure signs: Reputation changes silently or with no cause.
 
-## 11. Continue Until 5 Customers Served
+## 13. Buy Or Place Furniture
+
+Action: In `Comenzi`, buy/place a shelf if enough money is available.
+
+Expected UI: Feedback confirms the shop purchase or says `Nu ai suficienți bani.`
+
+Expected result: No stale menu remains open unexpectedly, and bought shelves use existing shelf visuals.
+
+Failure signs: Generic failure, invisible furniture, or a menu action affects the wrong product.
+
+## 14. Continue Until 5 Customers Served
 
 Action: Keep shelves stocked and let customers buy.
 
@@ -112,7 +142,27 @@ Expected result: Relaxed mode stays forgiving; reputation does not collapse duri
 
 Failure signs: Customer pressure overwhelms the player in the first minutes.
 
-## 12. Complete First Day
+## 15. Save Game
+
+Action: Open `Salv.`, choose a slot.
+
+Expected UI: Slot menu stays inside the game UI.
+
+Expected result: Feedback says the game was saved to that slot.
+
+Failure signs: OS folder picker opens, no feedback, or slot text does not update.
+
+## 16. Load Game
+
+Action: Open `Încarcă`, choose the saved slot.
+
+Expected UI: If no saves exist, the menu says `Nu există salvări.`
+
+Expected result: The save loads, transient menus close, and the game returns to a playable state.
+
+Failure signs: Old price/orders/staff popup remains open or the load leaves the player in a confusing state.
+
+## 17. Complete First Day
 
 Action: Let business finish, open/read report, advance to next day.
 

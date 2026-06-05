@@ -206,9 +206,9 @@ public sealed class RegressionCoverageTests
         string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
 
         Assert.Contains("StartupNewGameButton", uiRoot);
-        Assert.Contains("text = \"Joc nou\"", uiRoot);
+        Assert.Contains("text = \"Joc Nou\"", uiRoot);
         Assert.Contains("StartupLoadFileButton", uiRoot);
-        Assert.Contains("text = \"Încarcă joc\"", uiRoot);
+        Assert.Contains("text = \"Încarcă Joc\"", uiRoot);
         Assert.Contains("NewGameStoreNameInput", newGame);
         Assert.Contains("NewGameDifficultyPicker", newGame);
         Assert.Contains("NewGameDurationPicker", newGame);
@@ -360,15 +360,16 @@ public sealed class RegressionCoverageTests
     }
 
     [Fact]
-    public void RuntimeUiDoesNotAutoOpenFirstRunTutorialOverlay()
+    public void RuntimeUiOpensVisibleFirstRunTutorialOverlay()
     {
         string projectRoot = FindRepoRoot();
         string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
 
-        Assert.Contains("private bool _tutorialEnabled = false;", uiManager);
+        Assert.Contains("private bool _tutorialEnabled = true;", uiManager);
+        Assert.Contains("SetPrice = 1", uiManager);
         Assert.Contains("Name = \"TutorialBodyScroll\"", uiManager);
         Assert.Contains("HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled", uiManager);
-        Assert.DoesNotContain("Refresh();\n\t\t\tShowTutorialStep();", uiManager);
+        Assert.Contains("StartGuidedTutorial();", uiManager);
         Assert.Contains("RefreshModalOverlayVisibility();", uiManager);
     }
 
@@ -442,6 +443,7 @@ public sealed class RegressionCoverageTests
     {
         Assert.Collection(OnboardingObjectiveCatalog.Objectives,
             objective => Assert.Equal(("stock_first_shelf", "Aprovizionează primul raft"), (objective.Id, objective.TitleRo)),
+            objective => Assert.Equal(("set_first_price", "Setează prețul unui produs"), (objective.Id, objective.TitleRo)),
             objective => Assert.Equal(("serve_first_customer", "Servește primul client"), (objective.Id, objective.TitleRo)),
             objective => Assert.Equal(("buy_first_shelf", "Cumpără sau plasează un raft nou"), (objective.Id, objective.TitleRo)),
             objective => Assert.Equal(("hire_first_worker", "Angajează un lucrător"), (objective.Id, objective.TitleRo)),
@@ -482,10 +484,13 @@ public sealed class RegressionCoverageTests
         using var game = new GameManager(10000, settings: new GameStartSettings("Ghidat", GameDifficulty.Relaxed, 14));
 
         Assert.False(game.GetOnboardingObjectives().Single(item => item.Objective.Id == "stock_first_shelf").IsCompleted);
+        Assert.False(game.GetOnboardingObjectives().Single(item => item.Objective.Id == "set_first_price").IsCompleted);
         Assert.False(game.GetOnboardingObjectives().Single(item => item.Objective.Id == "serve_first_customer").IsCompleted);
 
         Assert.True(game.RefillShelf(1, 10) > 0);
         Assert.True(game.GetOnboardingObjectives().Single(item => item.Objective.Id == "stock_first_shelf").IsCompleted);
+        Assert.True(game.SetProductPrice(1, Money.FromUnits(46)));
+        Assert.True(game.GetOnboardingObjectives().Single(item => item.Objective.Id == "set_first_price").IsCompleted);
         Assert.True(game.StartBusiness());
         game.TickBusiness();
 
@@ -519,6 +524,161 @@ public sealed class RegressionCoverageTests
 
         Assert.Contains("Reputație -", game.LastReputationFeedbackRo);
         Assert.Contains("clienții au așteptat prea mult la casă", game.LastReputationFeedbackRo);
+    }
+
+    [Fact]
+    public void ProductPriceValidationRejectsNegativeAndUnreasonablePrices()
+    {
+        using var game = new GameManager(10000, settings: new GameStartSettings("Prețuri", GameDifficulty.Relaxed, 14));
+        var product = game.Inventory.GetProduct(1)!;
+        Money originalPrice = product.SalePrice;
+        Money otherProductPrice = game.Inventory.GetProduct(2)!.SalePrice;
+
+        Assert.False(game.SetProductPrice(1, Money.FromUnits(-1)));
+        Assert.False(game.SetProductPrice(1, GameManager.MaximumProductSalePrice + Money.FromUnits(1)));
+        Assert.Equal(originalPrice, product.SalePrice);
+
+        Assert.True(game.SetProductPrice(1, Money.FromUnits(50)));
+        Assert.Equal(Money.FromUnits(50), product.SalePrice);
+        Assert.Equal(otherProductPrice, game.Inventory.GetProduct(2)!.SalePrice);
+    }
+
+    [Fact]
+    public void PriceMenuUsesSingleExplicitTargetAndRomanianFeedback()
+    {
+        string projectRoot = FindRepoRoot();
+        string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
+        string uiRoot = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Scenes", "UIRoot.tscn"));
+        string ro = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Localization", "ro.csv"));
+
+        Assert.Contains("_activePriceProductId", uiManager);
+        Assert.Contains("BeginPriceEdit", uiManager);
+        Assert.Contains("ClearPriceEditTarget", uiManager);
+        Assert.Contains("BeginPriceEdit(productId.Value, focusInput: false)", uiManager);
+        Assert.DoesNotContain("CompleteTutorialStep(TutorialStep.SetPrice);\n\t\t\t\tHidePricesPopup();", uiManager);
+        Assert.Contains("RuntimePriceTargetLabel", uiRoot);
+        Assert.Contains("Preț actualizat pentru {0}.", ro);
+        Assert.Contains("Nu există produs selectat.", ro);
+        Assert.Contains("Introdu un preț valid.", ro);
+        Assert.Contains("ui_cancel", uiManager);
+    }
+
+    [Fact]
+    public void ManagementMenusStayOpenAndUseTaskBoxProgress()
+    {
+        string projectRoot = FindRepoRoot();
+        string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
+        string uiRoot = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Scenes", "UIRoot.tscn"));
+
+        Assert.DoesNotContain("RuntimeTaskChecklist", uiRoot);
+        Assert.DoesNotContain("TaskChecklist.tscn", uiRoot);
+        Assert.Contains("BuildTaskBoxText", uiManager);
+        Assert.Contains("BuildOpeningTaskList", uiManager);
+        Assert.Contains("RefreshMenuProgressIndicators", uiManager);
+        Assert.Contains("Setează prețurile", uiManager);
+        Assert.Contains("Plasează o comandă", uiManager);
+        Assert.Contains("Aprovizionează rafturile", uiManager);
+        Assert.Contains("Verifică personalul", uiManager);
+        Assert.Contains("Verifică rapoartele", uiManager);
+        Assert.Contains("_reportsViewed = true;", uiManager);
+        Assert.Contains("_staffChanged = true;", uiManager);
+        Assert.DoesNotContain("ShowOpenShopWarning(warnings);", uiManager);
+        Assert.DoesNotContain("HideEventPopup();\n\t\t\t}", uiManager);
+    }
+
+    [Fact]
+    public void HotbarStatsAndWarmPixelThemeStayConsistent()
+    {
+        string projectRoot = FindRepoRoot();
+        string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
+        string uiRoot = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Scenes", "UIRoot.tscn"));
+        string theme = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Themes", "ChronoTheme.tres"));
+
+        Assert.Contains("RuntimeHudLabel", uiRoot);
+        Assert.Contains("Lei {_game.Economy.Cash}", uiManager);
+        Assert.Contains("Rep {_game.Customers.Reputation}", uiManager);
+        Assert.Contains("Stoc {_game.Inventory.TotalStorageUnits}/{_game.Inventory.StorageCapacity}", uiManager);
+        Assert.Contains("_shop2DStatusLabel.Visible = false;", uiManager);
+        Assert.Contains("0.52f, 0.88f", uiManager);
+        Assert.Contains("custom_minimum_size = Vector2(286, 100)", uiRoot);
+        Assert.Contains("bg_color = Color(0.54, 0.27, 0.1, 1)", theme);
+        Assert.Contains("Chrono/colors/success = Color(0.84, 0.46, 0.18, 1)", theme);
+        Assert.Contains("corner_radius_top_left = 1", theme);
+        Assert.Contains("OptionButton/styles/normal = SubResource(\"StyleBoxFlat_button_normal\")", theme);
+    }
+
+    [Fact]
+    public void UiCleanupKeepsMenusCompactClickableAndCalm()
+    {
+        string projectRoot = FindRepoRoot();
+        string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
+        string uiRoot = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Scenes", "UIRoot.tscn"));
+        string theme = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Themes", "ChronoTheme.tres"));
+
+        Assert.Contains("ConfigureButtonSize", uiManager);
+        Assert.Contains("OrdersPopupSize = new(460f, 520f)", uiManager);
+        Assert.Contains("PricesPopupSize = new(390f, 300f)", uiManager);
+        Assert.Contains("StaffPopupSize = new(440f, 480f)", uiManager);
+        Assert.Contains("ReportPopupSize = new(540f, 540f)", uiManager);
+        Assert.Contains("StartupOptionsPopupSize = new(320f, 220f)", uiManager);
+        Assert.Contains("Math.Max(300f, preferredSize.X)", uiManager);
+        Assert.Contains("Magazin retro în buclă de timp", uiRoot);
+        Assert.Contains("custom_minimum_size = Vector2(260, 52)", uiRoot);
+        Assert.Contains("custom_minimum_size = Vector2(0, 78)", uiRoot);
+        Assert.DoesNotContain("RuntimeTaskChecklist", uiRoot);
+        Assert.DoesNotContain("TaskChecklist.tscn", uiRoot);
+        Assert.Contains("RuntimeTaskBoxLabel", uiRoot);
+        Assert.Contains("content_margin_left = 14.0", theme);
+        Assert.Contains("content_margin_top = 9.0", theme);
+        Assert.Contains("Button/colors/font_hover_color = Color(1, 0.96, 0.86, 1)", theme);
+        Assert.DoesNotContain("Button/colors/font_hover_color = Color(1, 1, 1, 1)", theme);
+        Assert.Contains("OptionButton/styles/hover = SubResource(\"StyleBoxFlat_button_hover\")", theme);
+    }
+
+    [Fact]
+    public void RuntimeUiRefreshIsThrottledDuringBusinessTicks()
+    {
+        string projectRoot = FindRepoRoot();
+        string tickManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Systems", "TickManager.cs"));
+        string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
+
+        Assert.Contains("BusinessUiRefreshInterval", tickManager);
+        Assert.Contains("UIManager?.Refresh(forceFullUiRefresh)", tickManager);
+        Assert.Contains("public void Refresh(bool forceFullRefresh = true)", uiManager);
+        Assert.Contains("RefreshRuntimePanel(bool fullRefresh)", uiManager);
+        Assert.Contains("RefreshRuntimeHudOnly", uiManager);
+        Assert.Contains("BuildFullRefreshSignature", uiManager);
+    }
+
+    [Fact]
+    public void LayoutChangesInvalidateCachedPathsAndNavigation()
+    {
+        string projectRoot = FindRepoRoot();
+        string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
+        string layoutManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "Store", "StoreLayoutManager.cs"));
+        string customerController = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "Store", "CustomerVisualController.cs"));
+        string employeeController = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "Store", "EmployeeVisualController.cs"));
+
+        Assert.Contains("InvalidateShopNavigation", uiManager);
+        Assert.Contains("_storeLayoutManager?.InvalidateNavigationCache();", uiManager);
+        Assert.Contains("_customerVisualController?.InvalidatePaths();", uiManager);
+        Assert.Contains("_employeeVisualController?.InvalidatePaths();", uiManager);
+        Assert.Contains("public void InvalidateNavigationCache()", layoutManager);
+        Assert.Contains("BuildObstacleSignature", layoutManager);
+        Assert.Contains("public void InvalidatePaths()", customerController);
+        Assert.Contains("public void InvalidatePaths()", employeeController);
+    }
+
+    [Fact]
+    public void RuntimeFlowAvoidsNoisyDebugPrintsAndClearsStaleTargetsOnLoad()
+    {
+        string projectRoot = FindRepoRoot();
+        string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
+
+        Assert.Contains("HideAllPopups();\n\t\t\t\tClearPriceEditTarget();\n\t\t\t\tInvalidateShopNavigation();", uiManager);
+        Assert.DoesNotContain("GD.Print(\"UIManager: Open Shop pressed.", uiManager);
+        Assert.DoesNotContain("GD.Print(\"UIManager: Apply Price pressed.", uiManager);
+        Assert.DoesNotContain("GD.Print(\"UIManager: Place Order pressed.", uiManager);
     }
 
     [Fact]
@@ -591,6 +751,7 @@ public sealed class RegressionCoverageTests
         string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
 
         Assert.Contains("Bun venit! Primul pas: aprovizionează un raft.", uiManager);
+        Assert.Contains("Acum setează prețul unui produs.", uiManager);
         Assert.Contains("Clienții intră prin ușă și caută produse pe rafturi.", uiManager);
         Assert.Contains("După cumpărături, clienții așteaptă la casă.", uiManager);
         Assert.Contains("Casierii reduc coada. Stocarii ajută rafturile.", uiManager);

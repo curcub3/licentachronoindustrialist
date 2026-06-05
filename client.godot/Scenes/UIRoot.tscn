@@ -3,7 +3,6 @@
 [ext_resource type="Script" uid="uid://c7kxxui87q84e" path="res://Visuals/UIManager.cs" id="1"]
 [ext_resource type="PackedScene" path="res://Scenes/NewGameSetupPanel.tscn" id="10"]
 [ext_resource type="Theme" uid="uid://dkci32srtbdk6" path="res://Themes/ChronoTheme.tres" id="11"]
-[ext_resource type="PackedScene" path="res://Assets/UI/components/TaskChecklist.tscn" id="12"]
 
 [node name="UIRoot" type="Control" unique_id=400006292]
 layout_mode = 3
@@ -32,7 +31,7 @@ layout_mode = 2
 theme_override_constants/separation = 12
 
 [node name="TopMenu" type="PanelContainer" parent="GameplayRoot/AppVBox" unique_id=1705536631]
-custom_minimum_size = Vector2(0, 64)
+custom_minimum_size = Vector2(0, 78)
 layout_direction = 1
 layout_mode = 2
 size_flags_horizontal = 3
@@ -49,7 +48,7 @@ layout_mode = 2
 theme_override_constants/separation = 6
 
 [node name="RuntimeHudLabel" type="Label" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=95899485]
-custom_minimum_size = Vector2(220, 0)
+custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Zi 1/14 | Administrare | Numerar 1500.00 lei | Profit sesiune 0.00 lei | Reputație 50"
@@ -58,52 +57,52 @@ autowrap_mode = 2
 clip_text = true
 
 [node name="RuntimeOpenShopButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=1942284629]
-custom_minimum_size = Vector2(82, 34)
+custom_minimum_size = Vector2(92, 40)
 layout_mode = 2
 text = "Deschide"
 
 [node name="RuntimeNextDayButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=1362347357]
-custom_minimum_size = Vector2(74, 34)
+custom_minimum_size = Vector2(86, 40)
 layout_mode = 2
 text = "Ziua urm."
 
 [node name="RuntimePauseSpeedButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=988747248]
-custom_minimum_size = Vector2(50, 34)
+custom_minimum_size = Vector2(56, 40)
 layout_mode = 2
 text = "Pauză"
 
 [node name="RuntimeNormalSpeedButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=1032164449]
-custom_minimum_size = Vector2(32, 34)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 text = "1x"
 
 [node name="RuntimeFastSpeedButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=624554906]
-custom_minimum_size = Vector2(32, 34)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 text = "2x"
 
 [node name="RuntimeFasterSpeedButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=199941237]
-custom_minimum_size = Vector2(32, 34)
+custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 text = "4x"
 
 [node name="RuntimeSaveButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=1021845460]
-custom_minimum_size = Vector2(46, 34)
+custom_minimum_size = Vector2(54, 40)
 layout_mode = 2
 text = "Salv."
 
 [node name="RuntimeLoadButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=564952856]
-custom_minimum_size = Vector2(58, 34)
+custom_minimum_size = Vector2(72, 40)
 layout_mode = 2
 text = "Încarcă"
 
 [node name="RuntimeResetButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=541377233]
-custom_minimum_size = Vector2(50, 34)
+custom_minimum_size = Vector2(58, 40)
 layout_mode = 2
 text = "Reset"
 
 [node name="RuntimeMainMenuButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=601555053]
-custom_minimum_size = Vector2(50, 34)
+custom_minimum_size = Vector2(58, 40)
 layout_mode = 2
 text = "Meniu"
 
@@ -114,7 +113,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 12
 
 [node name="LeftMenu" type="PanelContainer" parent="GameplayRoot/AppVBox/BodyHBox" unique_id=1670133066]
-custom_minimum_size = Vector2(244, 100)
+custom_minimum_size = Vector2(286, 100)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 3
@@ -153,13 +152,11 @@ layout_mode = 2
 autowrap_mode = 2
 clip_text = true
 
-[node name="RuntimeChecklistLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=406904592]
+[node name="RuntimeTaskBoxLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=406904592]
 visible = false
+custom_minimum_size = Vector2(0, 86)
 layout_mode = 2
 autowrap_mode = 2
-
-[node name="RuntimeTaskChecklist" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=1535771970 instance=ExtResource("12")]
-layout_mode = 2
 
 [node name="RuntimeBusinessProgressBar" type="ProgressBar" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=365707376]
 visible = false
@@ -727,9 +724,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -220.0
+offset_left = -195.0
 offset_top = -150.0
-offset_right = 220.0
+offset_right = 195.0
 offset_bottom = 150.0
 
 [node name="PricesPopupMargin" type="MarginContainer" parent="ModalRoot/RuntimePricesPopup" unique_id=341885034]
@@ -759,6 +756,11 @@ text = "Închide"
 [node name="RuntimePriceProductPicker" type="OptionButton" parent="ModalRoot/RuntimePricesPopup/PricesPopupMargin/PricesPopupRoot" unique_id=877458700]
 layout_mode = 2
 
+[node name="RuntimePriceTargetLabel" type="Label" parent="ModalRoot/RuntimePricesPopup/PricesPopupMargin/PricesPopupRoot" unique_id=1481237711]
+layout_mode = 2
+text = "Produs selectat: -"
+autowrap_mode = 2
+
 [node name="RuntimePriceInput" type="LineEdit" parent="ModalRoot/RuntimePricesPopup/PricesPopupMargin/PricesPopupRoot" unique_id=1968863762]
 layout_mode = 2
 placeholder_text = "Preț vânzare"
@@ -774,9 +776,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -260.0
+offset_left = -220.0
 offset_top = -250.0
-offset_right = 260.0
+offset_right = 220.0
 offset_bottom = 250.0
 
 [node name="StaffPopupMargin" type="MarginContainer" parent="ModalRoot/RuntimeStaffPopup" unique_id=867612017]
@@ -837,9 +839,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -260.0
+offset_left = -210.0
 offset_top = -175.0
-offset_right = 260.0
+offset_right = 210.0
 offset_bottom = 175.0
 
 [node name="EventPopupMargin" type="MarginContainer" parent="ModalRoot/RuntimeEventPopup" unique_id=1048874252]
@@ -896,9 +898,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -330.0
+offset_left = -270.0
 offset_top = -280.0
-offset_right = 330.0
+offset_right = 270.0
 offset_bottom = 280.0
 
 [node name="ReportPopupMargin" type="MarginContainer" parent="ModalRoot/RuntimeReportPopup" unique_id=1192885248]
@@ -947,9 +949,9 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -260.0
+offset_left = -230.0
 offset_top = -270.0
-offset_right = 260.0
+offset_right = 230.0
 offset_bottom = 270.0
 
 [node name="OrdersPopupMargin" type="MarginContainer" parent="ModalRoot/RuntimeOrdersPopup" unique_id=1514931035]
@@ -1060,19 +1062,19 @@ grow_vertical = 2
 layout_mode = 2
 
 [node name="StartupCard" type="PanelContainer" parent="StartupMenu/StartupCenter" unique_id=394967781]
-custom_minimum_size = Vector2(360, 360)
+custom_minimum_size = Vector2(390, 420)
 layout_mode = 2
 
 [node name="StartupMargin" type="MarginContainer" parent="StartupMenu/StartupCenter/StartupCard" unique_id=31820798]
 layout_mode = 2
-theme_override_constants/margin_left = 28
-theme_override_constants/margin_top = 28
-theme_override_constants/margin_right = 28
-theme_override_constants/margin_bottom = 28
+theme_override_constants/margin_left = 32
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 32
+theme_override_constants/margin_bottom = 30
 
 [node name="StartupRoot" type="VBoxContainer" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin" unique_id=132356021]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 14
 
 [node name="StartupTitle" type="Label" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin/StartupRoot" unique_id=419613127]
 layout_mode = 2
@@ -1081,34 +1083,34 @@ text = "ChronoIndustrialist"
 horizontal_alignment = 1
 
 [node name="StartupSubtitle" type="Label" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin/StartupRoot" unique_id=1486080932]
-visible = false
 layout_mode = 2
+text = "Magazin retro în buclă de timp"
 horizontal_alignment = 1
 
 [node name="StartupSpacer" type="Control" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin/StartupRoot" unique_id=1578733399]
-custom_minimum_size = Vector2(0, 12)
+custom_minimum_size = Vector2(0, 8)
 layout_mode = 2
 
 [node name="StartupNewGameButton" type="Button" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin/StartupRoot" unique_id=934922486]
-custom_minimum_size = Vector2(240, 44)
+custom_minimum_size = Vector2(260, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "Joc nou"
+text = "Joc Nou"
 
 [node name="StartupLoadFileButton" type="Button" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin/StartupRoot" unique_id=635970437]
-custom_minimum_size = Vector2(240, 44)
+custom_minimum_size = Vector2(260, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
-text = "Încarcă joc"
+text = "Încarcă Joc"
 
 [node name="StartupOptionsButton" type="Button" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin/StartupRoot" unique_id=1522844875]
-custom_minimum_size = Vector2(240, 44)
+custom_minimum_size = Vector2(260, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Setări"
 
 [node name="StartupExitButton" type="Button" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin/StartupRoot" unique_id=2036876677]
-custom_minimum_size = Vector2(240, 44)
+custom_minimum_size = Vector2(260, 52)
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Ieșire"

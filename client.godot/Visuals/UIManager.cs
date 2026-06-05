@@ -21,8 +21,7 @@ namespace Client.Scripts.Visuals
 		private TickManager? _tickManager;
 		private Label? _runtimeHudLabel;
 		private Label? _runtimeHintLabel;
-		private Label? _runtimeChecklistLabel;
-		private GodotObject? _runtimeTaskChecklist;
+		private Label? _runtimeTaskBoxLabel;
 		private ProgressBar? _runtimeBusinessProgressBar;
 		private Control? _startupMenu;
 		private Control? _startupOptionsPopup;
@@ -81,6 +80,7 @@ namespace Client.Scripts.Visuals
 		private Button? _runtimeCloseEventPopupButton;
 		private Button? _runtimeCloseReportPopupButton;
 		private OptionButton? _runtimePriceProductPicker;
+		private Label? _runtimePriceTargetLabel;
 		private LineEdit? _runtimePriceInput;
 		private Button? _runtimeApplyPriceButton;
 		private OptionButton? _runtimeOrderProductPicker;
@@ -147,11 +147,10 @@ namespace Client.Scripts.Visuals
 		private StoreFurnitureVisualController? _storeFurnitureVisualController;
 		private bool _runtimeActionsWired;
 		private bool _shopInteractionsWired;
-		private bool _taskChecklistWired;
 		private bool _contextualHelpWired;
 		private ContextualHelpTooltip? _contextualHelp;
 		private DayPhase? _lastObservedPhase;
-		private int _lastChecklistDay = -1;
+		private int _lastTaskResetDay = -1;
 		private DailyReport? _lastCompletedReport;
 		private DailyReport? _previousCompletedReport;
 		private int _lastCompletedReportDay = -1;
@@ -159,9 +158,10 @@ namespace Client.Scripts.Visuals
 		private bool _stockChecked;
 		private bool _ordersPlaced;
 		private bool _staffChecked;
+		private bool _staffChanged;
 		private bool _eventsChecked;
+		private bool _reportsViewed;
 		private bool _showAdvancedReport;
-		private readonly HashSet<string> _completedChecklistTaskIds = new();
 		private readonly Dictionary<Control, ShopNodeLayout> _shopNodeLayouts = new();
 		private PanelContainer? _openShopWarningPopup;
 		private Label? _openShopWarningLabel;
@@ -180,11 +180,18 @@ namespace Client.Scripts.Visuals
 		private Button? _confirmationConfirmButton;
 		private Action? _pendingConfirmationAction;
 		private bool _tutorialSeenThisSession;
-		private bool _tutorialEnabled = false;
+		private bool _tutorialEnabled = true;
 		private TutorialStep _tutorialStep = TutorialStep.None;
 		private bool _tutorialWaitingForAction;
 		private int _lastReputationFeedbackSequence;
 		private int _lastCheckoutFeedbackSequence;
+		private int? _activePriceProductId;
+		private bool _updatingPricePickerSelection;
+		private string _lastFullRefreshSignature = "";
+		private string _lastHudText = "";
+		private string _lastHintText = "";
+		private string _lastAlertSummaryText = "";
+		private double _lastBusinessProgressValue = -1.0;
 		[Export] public bool EnableLayoutDebug { get; set; } = false;
 
 		[Export] public string SaveFolderName { get; set; } = "Saves";
@@ -192,7 +199,18 @@ namespace Client.Scripts.Visuals
 		private const int VisibleSupplierCount = 3;
 		private const float ShopDesignWidth = 960f;
 		private const float ShopDesignHeight = 620f;
-		private const int TutorialStepCount = 11;
+		private const int TutorialStepCount = 12;
+		private static readonly Vector2 OrdersPopupSize = new(460f, 520f);
+		private static readonly Vector2 PricesPopupSize = new(390f, 300f);
+		private static readonly Vector2 StaffPopupSize = new(440f, 480f);
+		private static readonly Vector2 EventPopupSize = new(420f, 330f);
+		private static readonly Vector2 ReportPopupSize = new(540f, 540f);
+		private static readonly Vector2 SaveSlotPopupSize = new(420f, 330f);
+		private static readonly Vector2 TutorialPopupSize = new(460f, 280f);
+		private static readonly Vector2 ConfirmationPopupSize = new(360f, 190f);
+		private static readonly Vector2 StartupOptionsPopupSize = new(320f, 220f);
+		private static readonly Color MenuChangedColor = new(0.84f, 0.46f, 0.18f, 1f);
+		private static readonly Color MenuChangedBorderColor = new(1f, 0.74f, 0.38f, 1f);
 
 		private enum SaveSlotMenuMode
 		{
@@ -204,16 +222,17 @@ namespace Client.Scripts.Visuals
 		{
 			None = -1,
 			StockShelf = 0,
-			OpenStore = 1,
-			ObserveCustomers = 2,
-			CashierQueue = 3,
-			EmployeesHelp = 4,
-			MoneyEarned = 5,
-			Reputation = 6,
-			BuyFurniture = 7,
-			CurrentObjective = 8,
-			ReviewReport = 9,
-			Complete = 10
+			SetPrice = 1,
+			OpenStore = 2,
+			ObserveCustomers = 3,
+			CashierQueue = 4,
+			EmployeesHelp = 5,
+			MoneyEarned = 6,
+			Reputation = 7,
+			BuyFurniture = 8,
+			CurrentObjective = 9,
+			ReviewReport = 10,
+			Complete = 11
 		}
 
 		public override void _Ready()
@@ -237,6 +256,12 @@ namespace Client.Scripts.Visuals
 		{
 			_customerVisualController?.Advance(delta);
 			_employeeVisualController?.Advance(delta);
+		}
+
+		public override void _UnhandledInput(InputEvent inputEvent)
+		{
+			if (inputEvent.IsActionPressed("ui_cancel") && CloseCurrentModalOrPanel())
+				GetViewport().SetInputAsHandled();
 		}
 
 		private static string T(string key) => Localizer.Tr(key);
@@ -273,14 +298,14 @@ namespace Client.Scripts.Visuals
 		{
 			if (FindNodeRecursive("StartupSubtitle", this) is Label startupSubtitle)
 			{
-				startupSubtitle.Visible = false;
+				startupSubtitle.Visible = true;
 				startupSubtitle.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-				startupSubtitle.Text = "";
+				startupSubtitle.Text = "Magazin retro în buclă de timp";
 			}
 			if (_startupNewGameButton != null)
-				_startupNewGameButton.Text = "Joc nou";
+				_startupNewGameButton.Text = "Joc Nou";
 			if (_startupLoadFileButton != null)
-				_startupLoadFileButton.Text = "Încarcă joc";
+				_startupLoadFileButton.Text = "Încarcă Joc";
 			if (_startupOptionsButton != null)
 				_startupOptionsButton.Text = "Setări";
 			if (_startupExitButton != null)
@@ -364,6 +389,7 @@ namespace Client.Scripts.Visuals
 			ConfigureFillControl(_newGameDifficultyPicker);
 			ConfigureFillControl(_newGameDurationPicker);
 			ConfigureFillControl(_runtimePriceProductPicker);
+			ConfigureWrapLabel(_runtimePriceTargetLabel);
 			ConfigureFillControl(_runtimeOrderProductPicker);
 			ConfigureFillControl(_runtimeOrderSupplierPicker);
 			ConfigureFillControl(_runtimeShopCatalogPicker);
@@ -378,13 +404,52 @@ namespace Client.Scripts.Visuals
 			ConfigureWrapLabel(_runtimeHudLabel);
 			ConfigureWrapLabel(_runtimeNotificationLabel);
 			ConfigureWrapLabel(_runtimeHintLabel);
-			ConfigureWrapLabel(_runtimeChecklistLabel);
+			ConfigureWrapLabel(_runtimeTaskBoxLabel);
 			ConfigureWrapLabel(_runtimeShelfSummaryLabel);
 			ConfigureWrapLabel(_runtimeStaffSummaryLabel);
 			ConfigureWrapLabel(_runtimeEventLabel);
 			ConfigureWrapLabel(_runtimeReportLabel);
 			ConfigureWrapLabel(_rightContextLabel);
 			ConfigureWrapLabel(_newGameValidationLabel);
+
+			ConfigureButtonSize(_startupNewGameButton, 52f, 260f);
+			ConfigureButtonSize(_startupLoadFileButton, 52f, 260f);
+			ConfigureButtonSize(_startupOptionsButton, 52f, 260f);
+			ConfigureButtonSize(_startupExitButton, 52f, 260f);
+			ConfigureButtonSize(_startupCloseOptionsButton);
+			ConfigureButtonSize(_newGameStartButton);
+			ConfigureButtonSize(_newGameBackButton);
+
+			foreach (Button? button in new[]
+			{
+				_runtimeOpenShopButton, _runtimeNextDayButton, _runtimeResetButton,
+				_runtimeMainMenuButton, _runtimeSaveButton, _runtimeLoadButton,
+				_runtimePauseSpeedButton, _runtimeNormalSpeedButton, _runtimeFastSpeedButton,
+				_runtimeFasterSpeedButton
+			})
+			{
+				ConfigureButtonSize(button, 40f);
+			}
+
+			foreach (Button? button in new[]
+			{
+				_runtimeManageTabButton, _runtimeStockTabButton, _runtimeStaffTabButton,
+				_runtimeEventTabButton, _runtimeReportTabButton, _runtimeStatsTabButton,
+				_runtimeOpenOrdersPopupButton, _runtimeOpenPricesPopupButton,
+				_runtimeOpenStaffPopupButton, _runtimeOpenEventPopupButton,
+				_runtimeOpenReportPopupButton, _runtimeCloseOrdersPopupButton,
+				_runtimeClosePricesPopupButton, _runtimeCloseStaffPopupButton,
+				_runtimeCloseEventPopupButton, _runtimeCloseReportPopupButton,
+				_runtimeApplyPriceButton, _runtimePlaceOrderButton,
+				_runtimeBuyShopCatalogButton, _runtimeAssignShelfButton,
+				_runtimeRefillShelfButton, _runtimeRefillAllShelvesButton,
+				_runtimeHireCandidateButton, _runtimeFireEmployeeButton,
+				_runtimeEventOptionAButton, _runtimeEventOptionBButton,
+				_runtimeTriggerEventButton, _runtimeCopyReportButton
+			})
+			{
+				ConfigureButtonSize(button);
+			}
 		}
 
 		private static void ConfigureFillControl(Control? control)
@@ -404,6 +469,19 @@ namespace Client.Scripts.Visuals
 			label.ClipText = false;
 		}
 
+		private static void ConfigureButtonSize(Button? button, float minHeight = 42f, float minWidth = 0f)
+		{
+			if (button == null)
+				return;
+
+			button.CustomMinimumSize = new Vector2(
+				Math.Max(button.CustomMinimumSize.X, minWidth),
+				Math.Max(button.CustomMinimumSize.Y, minHeight));
+			button.ClipText = true;
+			button.FocusMode = FocusModeEnum.All;
+			button.MouseDefaultCursorShape = CursorShape.PointingHand;
+		}
+
 		private void EnsureRuntimePanel()
 		{
 			var scenePanel = FindNodeRecursive("LeftMenu", this) ?? FindNodeRecursive("RuntimeControlPanel", this);
@@ -421,8 +499,7 @@ namespace Client.Scripts.Visuals
 		{
 			_runtimeHudLabel = FindNodeRecursive("RuntimeHudLabel", this) as Label;
 			_runtimeHintLabel = FindNodeRecursive("RuntimeHintLabel", this) as Label;
-			_runtimeChecklistLabel = FindNodeRecursive("RuntimeChecklistLabel", this) as Label;
-			_runtimeTaskChecklist = FindNodeRecursive("RuntimeTaskChecklist", this) as GodotObject;
+			_runtimeTaskBoxLabel = FindNodeRecursive("RuntimeTaskBoxLabel", this) as Label;
 			_runtimeBusinessProgressBar = FindNodeRecursive("RuntimeBusinessProgressBar", this) as ProgressBar;
 			_topHotbar = (FindNodeRecursive("TopMenu", this) ?? FindNodeRecursive("TopHotbar", this)) as Control;
 			_shop2DView = FindNodeRecursive("Shop2DView", this) as Control;
@@ -483,6 +560,7 @@ namespace Client.Scripts.Visuals
 			_runtimeCloseEventPopupButton = FindNodeRecursive("RuntimeCloseEventPopupButton", this) as Button;
 			_runtimeCloseReportPopupButton = FindNodeRecursive("RuntimeCloseReportPopupButton", this) as Button;
 			_runtimePriceProductPicker = FindNodeRecursive("RuntimePriceProductPicker", this) as OptionButton;
+			_runtimePriceTargetLabel = FindNodeRecursive("RuntimePriceTargetLabel", this) as Label;
 			_runtimePriceInput = FindNodeRecursive("RuntimePriceInput", this) as LineEdit;
 			_runtimeApplyPriceButton = FindNodeRecursive("RuntimeApplyPriceButton", this) as Button;
 			_runtimeOrderProductPicker = FindNodeRecursive("RuntimeOrderProductPicker", this) as OptionButton;
@@ -517,7 +595,6 @@ namespace Client.Scripts.Visuals
 			EnsureFlowPopups();
 			EnsureConfirmationPopup();
 			EnsureContextualHelp();
-			WireTaskChecklist();
 
 			if (_runtimeHudLabel == null || _runtimeReportLabel == null || _runtimeNotificationLabel == null
 				|| _runtimeOpenShopButton == null || _runtimeNextDayButton == null || _runtimeResetButton == null
@@ -718,6 +795,17 @@ namespace Client.Scripts.Visuals
 				_runtimeApplyPriceButton.Pressed += OnRuntimeApplyPricePressed;
 			}
 
+			if (_runtimePriceProductPicker != null)
+			{
+				_runtimePriceProductPicker.ItemSelected += index =>
+				{
+					if (_updatingPricePickerSelection)
+						return;
+
+					BeginPriceEdit(GetProductIdAt(_runtimePriceProductPicker, (int)index), focusInput: true);
+				};
+			}
+
 			if (_runtimePlaceOrderButton != null)
 			{
 				_runtimePlaceOrderButton.Disabled = false;
@@ -770,7 +858,6 @@ namespace Client.Scripts.Visuals
 			WireShopInteractions();
 			_runtimeActionsWired = true;
 			ShowRuntimeSection(_runtimePriceSection);
-			GD.Print("UIManager: runtime buttons wired.");
 		}
 
 		private void EnsureContextualHelp()
@@ -790,7 +877,7 @@ namespace Client.Scripts.Visuals
 				"Status",
 				"Arată pe scurt ziua curentă, faza, banii, profitul și alertele importante.");
 			_contextualHelp.Register(
-				_runtimeChecklistLabel,
+				_runtimeTaskBoxLabel,
 				"Pași de urmat",
 				"Afișează recomandarea principală pentru faza curentă.");
 			_contextualHelp.Register(
@@ -869,58 +956,6 @@ namespace Client.Scripts.Visuals
 			_contextualHelpWired = true;
 		}
 
-		private void WireTaskChecklist()
-		{
-			if (_taskChecklistWired || _runtimeTaskChecklist == null)
-				return;
-
-			_runtimeTaskChecklist.Connect("task_toggled", Callable.From<string, bool>(OnTaskChecklistToggled));
-			_taskChecklistWired = true;
-		}
-
-		private void OnTaskChecklistToggled(string taskId, bool completed)
-		{
-			switch (taskId)
-			{
-				case "prices":
-					_pricesChecked = completed;
-					break;
-				case "stock":
-					_stockChecked = completed;
-					break;
-				case "orders":
-					_ordersPlaced = completed;
-					break;
-				case "staff":
-					_staffChecked = completed;
-					break;
-				case "events":
-					_eventsChecked = completed;
-					break;
-				default:
-					SetChecklistTaskCompleted(taskId, completed);
-					break;
-			}
-
-			UpdateChecklistDisplay();
-		}
-
-		private void SetChecklistTaskCompleted(string taskId, bool completed)
-		{
-			if (string.IsNullOrWhiteSpace(taskId))
-				return;
-
-			if (completed)
-				_completedChecklistTaskIds.Add(taskId);
-			else
-				_completedChecklistTaskIds.Remove(taskId);
-		}
-
-		private bool IsChecklistTaskCompleted(string taskId, bool autoCompleted = false)
-		{
-			return autoCompleted || _completedChecklistTaskIds.Contains(taskId);
-		}
-
 		private void ShowRuntimeSection(Control? section)
 		{
 			if (_runtimePriceSection != null)
@@ -982,45 +1017,38 @@ namespace Client.Scripts.Visuals
 		private void OpenWorldPrices(int productId)
 		{
 			ShowRuntimeSection(_runtimePriceSection);
-			bool foundProduct = false;
-			if (_runtimePriceProductPicker != null)
-			{
-				for (int i = 0; i < _runtimePriceProductPicker.GetItemCount(); i++)
-				{
-					if (_runtimePriceProductPicker.GetItemId(i) == productId)
-					{
-						_runtimePriceProductPicker.Selected = i;
-						UpdateRuntimePriceInput();
-						foundProduct = true;
-						break;
-					}
-				}
-			}
-			if (!foundProduct)
+			if (!SelectProductInPicker(_runtimePriceProductPicker, productId))
 				Notify($"Produsul #{productId} nu este disponibil în lista de prețuri.");
-			ShowPricesPopup();
+			ShowPricesPopup(productId);
 		}
 
 		private void ShowOrdersPopup()
 		{
-			_stockChecked = true;
 			HideAllPopups();
 			if (_runtimeOrdersPopup != null)
-				ShowBoundedPopup(_runtimeOrdersPopup, new Vector2(560, 540));
+				ShowBoundedPopup(_runtimeOrdersPopup, OrdersPopupSize);
 			else
 				Notify("Meniul de comenzi lipsește din scenă.");
-			UpdateChecklistDisplay();
+			UpdateTaskBoxDisplay();
 		}
 
 		private void ShowPricesPopup()
 		{
-			_pricesChecked = true;
+			ShowPricesPopup(null);
+		}
+
+		private void ShowPricesPopup(int? requestedProductId)
+		{
+			int? targetProductId = requestedProductId ?? _activePriceProductId ?? GetSelectedProductId(_runtimePriceProductPicker);
 			HideAllPopups();
 			if (_runtimePricesPopup != null)
-				ShowBoundedPopup(_runtimePricesPopup, new Vector2(440, 300));
+			{
+				ShowBoundedPopup(_runtimePricesPopup, PricesPopupSize);
+				BeginPriceEdit(targetProductId, focusInput: true);
+			}
 			else
 				Notify("Meniul de prețuri lipsește din scenă.");
-			UpdateChecklistDisplay();
+			UpdateTaskBoxDisplay();
 		}
 
 		private void ShowStaffPopup()
@@ -1028,120 +1056,163 @@ namespace Client.Scripts.Visuals
 			_staffChecked = true;
 			HideAllPopups();
 			if (_runtimeStaffPopup != null)
-				ShowBoundedPopup(_runtimeStaffPopup, new Vector2(520, 500));
+				ShowBoundedPopup(_runtimeStaffPopup, StaffPopupSize);
 			else
 				Notify("Meniul de personal lipsește din scenă.");
 			CompleteTutorialStep(TutorialStep.EmployeesHelp);
-			UpdateChecklistDisplay();
+			UpdateTaskBoxDisplay();
 		}
 
 		private void ShowEventPopup()
 		{
-			_eventsChecked = true;
 			HideAllPopups();
 			if (_runtimeEventPopup != null)
-				ShowBoundedPopup(_runtimeEventPopup, new Vector2(520, 350));
+				ShowBoundedPopup(_runtimeEventPopup, EventPopupSize);
 			else
 				Notify("Meniul de evenimente lipsește din scenă.");
-			UpdateChecklistDisplay();
+			UpdateTaskBoxDisplay();
 		}
 
-		private void UpdateChecklistDisplay()
+		private void UpdateTaskBoxDisplay()
 		{
-			if (_runtimeChecklistLabel != null)
-				_runtimeChecklistLabel.Text = BuildManagementChecklist();
-			RefreshTaskChecklist();
+			if (_runtimeTaskBoxLabel != null)
+			{
+				_runtimeTaskBoxLabel.Visible = true;
+				_runtimeTaskBoxLabel.Text = BuildTaskBoxText();
+			}
+			RefreshMenuProgressIndicators();
 		}
 
-		private void RefreshTaskChecklist()
+		private string BuildTaskBoxText()
 		{
-			if (_runtimeTaskChecklist == null)
-				return;
-
-			_runtimeTaskChecklist.Set("visible", true);
-			_runtimeTaskChecklist.Call("set_title", BuildChecklistTitle());
-			_runtimeTaskChecklist.Call("clear_tasks");
 			if (_game == null)
-				return;
+				return "";
 
+			var lines = new List<string> { "Sarcini rapide" };
 			if (IsTutorialActive())
 			{
-				_runtimeTaskChecklist.Call("add_task", "tutorial_goal", GetTutorialChecklistTitle(), GetTutorialTaskSummary(), false, false, 1);
-				_runtimeTaskChecklist.Call("add_task", "tutorial_loop", "Înțelege bucla zilei", "Raft, stoc, clienți, coadă, bani, reputație.", _tutorialStep >= TutorialStep.OpenStore, true, 2);
-				return;
+				lines.Add(GetTutorialTaskSummary());
+				return string.Join("\n", lines);
 			}
-
-			foreach (var objective in _game.GetOnboardingObjectives())
-			{
-				_runtimeTaskChecklist.Call("add_task", objective.Objective.Id, objective.Objective.TitleRo, objective.Objective.SummaryRo, objective.IsCompleted, false, 0);
-				if (!objective.IsCompleted)
-					break;
-			}
-
-			if (_game.CurrentDay <= 3)
-				_runtimeTaskChecklist.Call("add_task", $"day_{_game.CurrentDay}_guide", GetGuidedDayObjectiveTitle(), GetGuidedDayObjectiveSummary(), false, true, 0);
 
 			switch (_game.CurrentPhase)
 			{
 				case DayPhase.Management:
-					_runtimeTaskChecklist.Call("add_task", "prices", "Prețuri verificate", "Deschide meniul Prețuri și verifică marjele înainte de vânzare.", _pricesChecked, false, 1);
-					_runtimeTaskChecklist.Call("add_task", "stock", "Stoc verificat", "Verifică depozitul, rafturile și produsele cu stoc redus.", _stockChecked, false, 1);
-					_runtimeTaskChecklist.Call("add_task", "orders", "Comenzi plasate", "Plasează comenzile necesare pentru produsele care pot rămâne fără stoc.", _ordersPlaced, true, 2);
-					_runtimeTaskChecklist.Call("add_task", "staff", "Angajați verificați", "Verifică personalul, casierii și costul salariilor.", _staffChecked, false, 2);
-					_runtimeTaskChecklist.Call("add_task", "events", "Evenimente analizate", "Verifică evenimentele active și reclamațiile înainte de deschidere.", _eventsChecked || _game.CurrentDecision == null, true, 3);
+					var missing = BuildOpeningTaskList();
+					if (missing.Count == 0)
+						lines.Add("Gata de deschidere.");
+					else
+						lines.AddRange(missing);
 					break;
+
 				case DayPhase.Business:
-					_runtimeTaskChecklist.Call("add_task", "monitor_sales", "Monitorizează vânzarea", "Urmărește coada, rafturile și numerarul până se închide magazinul.", IsChecklistTaskCompleted("monitor_sales", _game.CurrentCustomersServedToday > 0 || GetBusinessProgressPercent() >= 20), false, 1);
-					_runtimeTaskChecklist.Call("add_task", "monitor_stock", "Urmărește stocul", "Dacă rafturile se golesc repede, notează ce trebuie comandat mâine.", IsChecklistTaskCompleted("monitor_stock", _stockChecked || HasLowShelfStock()), false, 1);
-					_runtimeTaskChecklist.Call("add_task", "review_events", "Notează problemele", "Ține minte reclamațiile și evenimentele pentru raportul de la închidere.", IsChecklistTaskCompleted("review_events", _eventsChecked || _game.CurrentEvent == null || !_game.CurrentEvent.IsActive), true, 2);
+					lines.Add($"Vânzare: urmărește coada {_game.CurrentQueueLength} și stocul.");
+					if (HasLowShelfStock())
+						lines.Add("Aprovizionează mâine");
 					break;
+
 				case DayPhase.Closing:
-					_runtimeTaskChecklist.Call("add_task", "review_report", "Citește raportul", "Compară profitul, cheltuielile și alertele înainte să treci la ziua următoare.", IsChecklistTaskCompleted("review_report"), false, 1);
-					_runtimeTaskChecklist.Call("add_task", "save_game", "Salvează sesiunea", "Păstrează progresul înainte de a continua.", IsChecklistTaskCompleted("save_game"), true, 2);
-					_runtimeTaskChecklist.Call("add_task", "prepare_tomorrow", "Pregătește ziua următoare", "Notează ce trebuie corectat la prețuri, stoc sau personal.", IsChecklistTaskCompleted("prepare_tomorrow"), true, 3);
+					lines.Add(_reportsViewed ? "Raport verificat." : "Verifică rapoartele");
+					lines.Add("Salvează dacă vrei să păstrezi progresul");
 					break;
+
 				default:
-					_runtimeTaskChecklist.Call("add_task", "deliveries", "Verifică dimineața", "Vezi livrările, taxele și evenimentele înainte de Administrare.", IsChecklistTaskCompleted("deliveries", _game.Inventory.PendingOrders.Count > 0 || _game.CurrentEvent != null), false, 1);
-					_runtimeTaskChecklist.Call("add_task", "prepare_opening", "Pregătește deschiderea", "Ajustează stocul și personalul înainte să deschizi magazinul.", IsChecklistTaskCompleted("prepare_opening", _pricesChecked || _stockChecked || _staffChecked), false, 2);
-					_runtimeTaskChecklist.Call("add_task", "review_report", "Deschide raportul", "Dacă sesiunea s-a încheiat, verifică raportul înainte de următorul pas.", IsChecklistTaskCompleted("review_report"), true, 3);
+					lines.Add("Verifică livrările");
+					lines.Add("Pregătește administrarea");
 					break;
 			}
+
+			return string.Join("\n", lines);
 		}
 
-		private string BuildChecklistTitle()
+		private List<string> BuildOpeningTaskList()
 		{
+			var tasks = new List<string>();
 			if (_game == null)
-				return "Checklist";
+				return tasks;
 
-			if (IsTutorialActive())
-				return "Checklist tutorial";
+			if (!_pricesChecked)
+				tasks.Add("Setează prețurile");
+			if (!_ordersPlaced)
+				tasks.Add("Plasează o comandă");
+			if (!_stockChecked || HasLowShelfStock())
+				tasks.Add("Aprovizionează rafturile");
+			if (!_staffChecked)
+				tasks.Add("Verifică personalul");
+			if (!_reportsViewed)
+				tasks.Add("Verifică rapoartele");
+			if (_game.CurrentDecision != null)
+				tasks.Add("Rezolvă evenimentul");
+			if (_game.Employees.CountRole(EmployeeRole.Cashier) <= 0)
+				tasks.Add("Angajează/verifică un casier");
 
-			return _game.CurrentPhase switch
-			{
-				DayPhase.Management => $"Checklist Ziua {_game.CurrentDay}",
-				DayPhase.Business => "Checklist vânzare",
-				DayPhase.Closing => "Checklist închidere",
-				_ => "Checklist dimineață"
-			};
+			return tasks.Distinct().Take(3).ToList();
 		}
 
-		private string GetTutorialChecklistTitle()
+		private void RefreshMenuProgressIndicators()
 		{
-			return _tutorialStep switch
+			SetMenuChangedState(_runtimeManageTabButton, _pricesChecked);
+			SetMenuChangedState(_runtimeOpenPricesPopupButton, _pricesChecked);
+			SetMenuChangedState(_runtimeStockTabButton, _ordersPlaced || _stockChecked);
+			SetMenuChangedState(_runtimeOpenOrdersPopupButton, _ordersPlaced || _stockChecked);
+			SetMenuChangedState(_runtimeStaffTabButton, _staffChanged);
+			SetMenuChangedState(_runtimeOpenStaffPopupButton, _staffChanged);
+			SetMenuChangedState(_runtimeEventTabButton, _eventsChecked);
+			SetMenuChangedState(_runtimeOpenEventPopupButton, _eventsChecked);
+			SetMenuChangedState(_runtimeReportTabButton, _reportsViewed);
+			SetMenuChangedState(_runtimeStatsTabButton, _reportsViewed);
+			SetMenuChangedState(_runtimeOpenReportPopupButton, _reportsViewed);
+		}
+
+		private static void SetMenuChangedState(Button? button, bool changed)
+		{
+			if (button == null)
+				return;
+
+			if (!changed)
 			{
-				TutorialStep.StockShelf => "Aprovizionează raftul",
-				TutorialStep.OpenStore => "Deschide",
-				TutorialStep.ObserveCustomers => "Urmărește clienții",
-				TutorialStep.CashierQueue => "Urmărește casa",
-				TutorialStep.EmployeesHelp => "Verifică angajații",
-				TutorialStep.MoneyEarned => "Vezi banii",
-				TutorialStep.Reputation => "Protejează reputația",
-				TutorialStep.BuyFurniture => "Cumpără un raft",
-				TutorialStep.CurrentObjective => "Urmărește obiectivul",
-				TutorialStep.ReviewReport => "Citește raportul",
-				TutorialStep.Complete => "Finalizează tutorialul",
-				_ => "Urmează tutorialul"
+				button.RemoveThemeStyleboxOverride("normal");
+				button.RemoveThemeStyleboxOverride("hover");
+				button.RemoveThemeStyleboxOverride("pressed");
+				button.RemoveThemeStyleboxOverride("focus");
+				button.RemoveThemeColorOverride("font_color");
+				button.RemoveThemeColorOverride("font_hover_color");
+				button.RemoveThemeColorOverride("font_pressed_color");
+				return;
+			}
+
+			var normal = CreateChangedButtonStyle(MenuChangedColor, MenuChangedBorderColor, 2);
+			var hover = CreateChangedButtonStyle(new Color(0.92f, 0.54f, 0.22f, 1f), MenuChangedBorderColor, 2);
+			var pressed = CreateChangedButtonStyle(new Color(0.62f, 0.31f, 0.12f, 1f), MenuChangedBorderColor, 2);
+			button.AddThemeStyleboxOverride("normal", normal);
+			button.AddThemeStyleboxOverride("hover", hover);
+			button.AddThemeStyleboxOverride("focus", hover);
+			button.AddThemeStyleboxOverride("pressed", pressed);
+			button.AddThemeColorOverride("font_color", new Color(1f, 0.94f, 0.82f, 1f));
+			button.AddThemeColorOverride("font_hover_color", new Color(1f, 0.98f, 0.9f, 1f));
+			button.AddThemeColorOverride("font_pressed_color", new Color(1f, 0.9f, 0.72f, 1f));
+		}
+
+		private static StyleBoxFlat CreateChangedButtonStyle(Color background, Color border, int borderWidth)
+		{
+			var style = new StyleBoxFlat
+			{
+				BgColor = background,
+				BorderColor = border,
+				BorderWidthLeft = borderWidth,
+				BorderWidthTop = borderWidth,
+				BorderWidthRight = borderWidth,
+				BorderWidthBottom = borderWidth,
+				CornerRadiusTopLeft = 1,
+				CornerRadiusTopRight = 1,
+				CornerRadiusBottomRight = 1,
+				CornerRadiusBottomLeft = 1,
+				ContentMarginLeft = 12,
+				ContentMarginTop = 7,
+				ContentMarginRight = 12,
+				ContentMarginBottom = 7
 			};
+			return style;
 		}
 
 		private string GetGuidedDayObjectiveTitle()
@@ -1176,13 +1247,13 @@ namespace Client.Scripts.Visuals
 		{
 			HideAllPopups();
 			if (_runtimeReportPopup != null)
-				ShowBoundedPopup(_runtimeReportPopup, new Vector2(660, 560));
+				ShowBoundedPopup(_runtimeReportPopup, ReportPopupSize);
 			else
 				Notify("Meniul de raport lipsește din scenă.");
-			SetChecklistTaskCompleted("review_report", true);
+			_reportsViewed = true;
 			if (_game != null && IsCompletedReport(GetDisplayReport()))
 				CompleteTutorialStep(TutorialStep.ReviewReport);
-			UpdateChecklistDisplay();
+			UpdateTaskBoxDisplay();
 		}
 
 		private void ShowBoundedPopup(Control popup, Vector2 preferredSize, bool useModalRoot = true, bool avoidTopMenu = true)
@@ -1255,7 +1326,7 @@ namespace Client.Scripts.Visuals
 				Math.Max(140f, viewportSize.Y - topInset - margin));
 			var contentMinimum = popup.GetCombinedMinimumSize();
 			var desiredSize = new Vector2(
-				Math.Max(preferredSize.X, contentMinimum.X),
+				Math.Max(300f, preferredSize.X),
 				Math.Max(preferredSize.Y, contentMinimum.Y));
 			var finalSize = new Vector2(
 				Math.Min(desiredSize.X, availableSize.X),
@@ -1279,25 +1350,25 @@ namespace Client.Scripts.Visuals
 			}
 
 			if (_runtimeOrdersPopup?.Visible == true)
-				FitPopupToViewport(_runtimeOrdersPopup, new Vector2(560, 540));
+				FitPopupToViewport(_runtimeOrdersPopup, OrdersPopupSize);
 			if (_runtimePricesPopup?.Visible == true)
-				FitPopupToViewport(_runtimePricesPopup, new Vector2(440, 300));
+				FitPopupToViewport(_runtimePricesPopup, PricesPopupSize);
 			if (_runtimeStaffPopup?.Visible == true)
-				FitPopupToViewport(_runtimeStaffPopup, new Vector2(520, 500));
+				FitPopupToViewport(_runtimeStaffPopup, StaffPopupSize);
 			if (_runtimeEventPopup?.Visible == true)
-				FitPopupToViewport(_runtimeEventPopup, new Vector2(520, 350));
+				FitPopupToViewport(_runtimeEventPopup, EventPopupSize);
 			if (_runtimeReportPopup?.Visible == true)
-				FitPopupToViewport(_runtimeReportPopup, new Vector2(660, 560));
+				FitPopupToViewport(_runtimeReportPopup, ReportPopupSize);
 			if (_saveSlotPopup?.Visible == true)
-				FitPopupToViewport(_saveSlotPopup, new Vector2(460, 330), _game != null);
+				FitPopupToViewport(_saveSlotPopup, SaveSlotPopupSize, _game != null);
 			if (_openShopWarningPopup?.Visible == true)
 				FitPopupToViewport(_openShopWarningPopup, new Vector2(430, 250));
 			if (_tutorialPopup?.Visible == true)
-				FitPopupToViewport(_tutorialPopup, new Vector2(520, 280));
+				FitPopupToViewport(_tutorialPopup, TutorialPopupSize);
 			if (_confirmationPopup?.Visible == true)
-				FitPopupToViewport(_confirmationPopup, new Vector2(380, 190), _game != null);
+				FitPopupToViewport(_confirmationPopup, ConfirmationPopupSize, _game != null);
 			if (_startupOptionsPopup?.Visible == true)
-				FitPopupToViewport(_startupOptionsPopup, new Vector2(360, 220), avoidTopMenu: false);
+				FitPopupToViewport(_startupOptionsPopup, StartupOptionsPopupSize, avoidTopMenu: false);
 
 			RefreshModalOverlayVisibility();
 		}
@@ -1313,6 +1384,7 @@ namespace Client.Scripts.Visuals
 		{
 			if (_runtimePricesPopup != null)
 				_runtimePricesPopup.Visible = false;
+			ClearPriceEditTarget();
 			RefreshModalOverlayVisibility();
 		}
 
@@ -1349,6 +1421,67 @@ namespace Client.Scripts.Visuals
 			DismissTutorialPopup();
 			HideConfirmationPopup();
 			HideStartupOptions();
+		}
+
+		private bool CloseCurrentModalOrPanel()
+		{
+			if (_confirmationPopup?.Visible == true)
+			{
+				HideConfirmationPopup();
+				return true;
+			}
+			if (_openShopWarningPopup?.Visible == true)
+			{
+				HideOpenShopWarning();
+				return true;
+			}
+			if (_tutorialPopup?.Visible == true)
+			{
+				HideTutorialPopup();
+				return true;
+			}
+			if (_saveSlotPopup?.Visible == true)
+			{
+				HideSaveSlotPopup();
+				return true;
+			}
+			if (_runtimePricesPopup?.Visible == true)
+			{
+				HidePricesPopup();
+				return true;
+			}
+			if (_runtimeOrdersPopup?.Visible == true)
+			{
+				HideOrdersPopup();
+				return true;
+			}
+			if (_runtimeStaffPopup?.Visible == true)
+			{
+				HideStaffPopup();
+				return true;
+			}
+			if (_runtimeEventPopup?.Visible == true)
+			{
+				HideEventPopup();
+				return true;
+			}
+			if (_runtimeReportPopup?.Visible == true)
+			{
+				HideReportPopup();
+				return true;
+			}
+			if (_startupOptionsPopup?.Visible == true)
+			{
+				HideStartupOptions();
+				return true;
+			}
+			if (_newGameSetupPanel?.Visible == true)
+			{
+				ShowStartupMainMenu();
+				return true;
+			}
+
+			return false;
 		}
 
 		private void DismissTutorialPopup()
@@ -1461,7 +1594,7 @@ namespace Client.Scripts.Visuals
 				? "Tutorial complet"
 				: $"Pas {(int)_tutorialStep + 1}/{TutorialStepCount}";
 			_tutorialCloseButton.Text = buttonText;
-			ShowBoundedPopup(_tutorialPopup, new Vector2(520, 280));
+			ShowBoundedPopup(_tutorialPopup, TutorialPopupSize);
 
 			if (_rightContextPanel != null)
 				SetContextPanel("Tutorial", GetTutorialTaskSummary());
@@ -1473,14 +1606,19 @@ namespace Client.Scripts.Visuals
 		{
 			return step switch
 			{
-				TutorialStep.StockShelf => (
-					"Aprovizionează raftul",
-					"Bun venit! Primul pas: aprovizionează un raft. Deschide Comenzi și apasă Realimentează.",
-					"Arată-mi unde",
-					true),
-				TutorialStep.OpenStore => (
-					"Deschide",
-					"Clienții intră prin ușă și caută produse pe rafturi.",
+					TutorialStep.StockShelf => (
+						"Aprovizionează raftul",
+						"Bun venit! Primul pas: aprovizionează un raft. Deschide Comenzi și apasă Realimentează.",
+						"Arată-mi unde",
+						true),
+					TutorialStep.SetPrice => (
+						"Setează prețul",
+						"Acum setează prețul unui produs. Deschide Prețuri, verifică produsul afișat și confirmă un preț valid.",
+						"Arată-mi unde",
+						true),
+					TutorialStep.OpenStore => (
+						"Deschide",
+						"Clienții intră prin ușă și caută produse pe rafturi.",
 					"Sunt gata",
 					true),
 				TutorialStep.ObserveCustomers => (
@@ -1536,8 +1674,9 @@ namespace Client.Scripts.Visuals
 		{
 			return _tutorialStep switch
 			{
-				TutorialStep.StockShelf => "Mută produse din depozit pe raft.",
-				TutorialStep.OpenStore => "Apasă «Deschide».",
+					TutorialStep.StockShelf => "Mută produse din depozit pe raft.",
+					TutorialStep.SetPrice => "Deschide Prețuri și confirmă prețul unui produs.",
+					TutorialStep.OpenStore => "Apasă «Deschide».",
 				TutorialStep.ObserveCustomers => "Urmărește clienții la rafturi.",
 				TutorialStep.CashierQueue => "Urmărește coada de la casă.",
 				TutorialStep.EmployeesHelp => "Deschide Personal și verifică rolurile.",
@@ -1563,14 +1702,15 @@ namespace Client.Scripts.Visuals
 		private void HighlightTutorialTarget()
 		{
 			Control? target = _tutorialStep switch
-			{
-				TutorialStep.StockShelf => _runtimeStockTabButton,
-				TutorialStep.OpenStore => _runtimeOpenShopButton,
+				{
+					TutorialStep.StockShelf => _runtimeStockTabButton,
+					TutorialStep.SetPrice => _runtimeManageTabButton,
+					TutorialStep.OpenStore => _runtimeOpenShopButton,
 				TutorialStep.ObserveCustomers => _queueLane ?? _shop2DView,
 				TutorialStep.CashierQueue => _queueLane ?? _registerZone,
 				TutorialStep.EmployeesHelp => _runtimeStaffTabButton,
 				TutorialStep.MoneyEarned => _runtimeHudLabel,
-				TutorialStep.CurrentObjective => _runtimeTaskChecklist as Control,
+				TutorialStep.CurrentObjective => _runtimeTaskBoxLabel,
 				TutorialStep.ReviewReport => _runtimeReportTabButton,
 				_ => _runtimeHintLabel
 			};
@@ -1591,7 +1731,7 @@ namespace Client.Scripts.Visuals
 			{
 				Name = "SaveSlotPopup",
 				Visible = false,
-				CustomMinimumSize = new Vector2(460, 330)
+				CustomMinimumSize = SaveSlotPopupSize
 			};
 			(_modalRoot ?? this).AddChild(_saveSlotPopup);
 
@@ -1619,7 +1759,7 @@ namespace Client.Scripts.Visuals
 				var button = new Button
 				{
 					Name = $"SaveSlot{i + 1}Button",
-					CustomMinimumSize = new Vector2(0, 62),
+					CustomMinimumSize = new Vector2(0, 64),
 					AutowrapMode = TextServer.AutowrapMode.WordSmart,
 					Text = $"{T("LABEL_SLOT")} {i + 1}\n{T("LABEL_EMPTY")}"
 				};
@@ -1644,7 +1784,7 @@ namespace Client.Scripts.Visuals
 				_saveSlotTitleLabel.Text = mode == SaveSlotMenuMode.Save ? T("BTN_SAVE_GAME") : T("BTN_LOAD_GAME");
 			RefreshSaveSlotButtons();
 			if (_saveSlotPopup != null)
-				ShowBoundedPopup(_saveSlotPopup, new Vector2(460, 330), avoidTopMenu: _game != null);
+				ShowBoundedPopup(_saveSlotPopup, SaveSlotPopupSize, avoidTopMenu: _game != null);
 		}
 
 		private void HideSaveSlotPopup()
@@ -1709,7 +1849,7 @@ namespace Client.Scripts.Visuals
 				{
 					Name = "FirstRunTutorialPopup",
 					Visible = false,
-					CustomMinimumSize = new Vector2(420, 260)
+					CustomMinimumSize = TutorialPopupSize
 				};
 				popupParent.AddChild(_tutorialPopup);
 
@@ -1788,7 +1928,7 @@ namespace Client.Scripts.Visuals
 			{
 				Name = "ConfirmationPopup",
 				Visible = false,
-				CustomMinimumSize = new Vector2(380, 190)
+				CustomMinimumSize = ConfirmationPopupSize
 			};
 			popupParent.AddChild(_confirmationPopup);
 
@@ -1841,7 +1981,7 @@ namespace Client.Scripts.Visuals
 			if (_confirmationPopup != null)
 			{
 				HideAllPopupsExceptConfirmation();
-				ShowBoundedPopup(_confirmationPopup, new Vector2(380, 190), avoidTopMenu: _game != null);
+				ShowBoundedPopup(_confirmationPopup, ConfirmationPopupSize, avoidTopMenu: _game != null);
 			}
 		}
 
@@ -2016,7 +2156,7 @@ namespace Client.Scripts.Visuals
 			if (_newGameSetupPanel != null)
 				_newGameSetupPanel.Visible = false;
 			if (_startupOptionsPopup != null)
-				ShowBoundedPopup(_startupOptionsPopup, new Vector2(360, 220), avoidTopMenu: false);
+				ShowBoundedPopup(_startupOptionsPopup, StartupOptionsPopupSize, avoidTopMenu: false);
 		}
 
 		private void HideStartupOptions()
@@ -2136,7 +2276,7 @@ namespace Client.Scripts.Visuals
 			if (available.X <= 0f || available.Y <= 0f)
 				return;
 
-			float scale = Math.Clamp(Math.Min(available.X / ShopDesignWidth, available.Y / ShopDesignHeight), 0.58f, 1f);
+			float scale = Math.Clamp(Math.Min(available.X / ShopDesignWidth, available.Y / ShopDesignHeight), 0.52f, 0.88f);
 			foreach (var entry in _shopNodeLayouts)
 			{
 				Control control = entry.Key;
@@ -2177,6 +2317,14 @@ namespace Client.Scripts.Visuals
 			_storeFurnitureVisualController ??= new StoreFurnitureVisualController(_shop2DView, _storeLayoutManager);
 		}
 
+		private void InvalidateShopNavigation()
+		{
+			_storeLayoutManager?.InvalidateNavigationCache();
+			_customerVisualController?.InvalidatePaths();
+			_employeeVisualController?.InvalidatePaths();
+			_lastFullRefreshSignature = "";
+		}
+
 		private void AutoWireNodes()
 		{
 			var type = GetType();
@@ -2210,14 +2358,60 @@ namespace Client.Scripts.Visuals
 			return null;
 		}
 
-		public void Refresh()
+		public void Refresh(bool forceFullRefresh = true)
 		{
 			if (_game == null) return;
 			SetStartupMode(false);
 			TrackCompletedReport();
-			RefreshRuntimePanel();
-			RefreshShop2DView();
+			if (forceFullRefresh)
+				_lastFullRefreshSignature = BuildFullRefreshSignature();
+			bool fullRefresh = forceFullRefresh || ShouldRunFullRefresh();
+			RefreshRuntimePanel(fullRefresh);
+			if (fullRefresh)
+				RefreshShop2DView();
 			DebugCheckLayout();
+		}
+
+		private bool ShouldRunFullRefresh()
+		{
+			string signature = BuildFullRefreshSignature();
+			if (signature == _lastFullRefreshSignature)
+				return false;
+
+			_lastFullRefreshSignature = signature;
+			return true;
+		}
+
+		private string BuildFullRefreshSignature()
+		{
+			if (_game == null)
+				return "";
+
+			var builder = new StringBuilder(256);
+			builder.Append(_game.CurrentDay).Append('|')
+				.Append(_game.CurrentPhase).Append('|')
+				.Append(_game.BusinessTicksRemaining / 30).Append('|')
+				.Append(_game.Economy.Cash.ToMicros()).Append('|')
+				.Append(_game.RunProfit.ToMicros()).Append('|')
+				.Append(_game.Customers.Reputation).Append('|')
+				.Append(_game.CurrentQueueLength).Append('|')
+				.Append(_game.CurrentCustomersServedToday).Append('|')
+				.Append(_game.CurrentCustomersLostToday).Append('|')
+				.Append(_game.Inventory.TotalStorageUnits).Append('/')
+				.Append(_game.Inventory.StorageCapacity).Append('|')
+				.Append(_game.Inventory.PendingOrders.Count).Append('|')
+				.Append(_game.Employees.Employees.Count).Append('|')
+				.Append(_game.Employees.Candidates.Count).Append('|')
+				.Append(_game.PurchasedCatalogItemIds.Count).Append('|')
+				.Append(_game.LastCheckoutFeedbackSequence).Append('|')
+				.Append(_game.LastReputationFeedbackSequence);
+
+			foreach (var product in _game.Inventory.Products)
+				builder.Append("|p").Append(product.Id).Append(':').Append(product.Quantity).Append(':').Append(product.SalePrice.ToMicros()).Append(':').Append(product.Popularity);
+			foreach (var shelf in _game.Inventory.Shelves)
+				builder.Append("|s").Append(shelf.Id).Append(':').Append(shelf.ProductId).Append(':').Append(shelf.CurrentStock).Append('/').Append(shelf.Capacity).Append(':').Append((int)shelf.DisplayType);
+
+			return builder.ToString();
 		}
 
 		private void DebugCheckLayout()
@@ -2257,8 +2451,8 @@ namespace Client.Scripts.Visuals
 
 			if (_shop2DStatusLabel != null)
 			{
-				_shop2DStatusLabel.Visible = true;
-				_shop2DStatusLabel.Text = $"{DescribeShopPhaseState()}     Ziua {_game.CurrentDay} - {PhaseName(_game.CurrentPhase)}     {T("LABEL_CASH")} {_game.Economy.Cash}     Profit azi {_game.Economy.DailyProfit}     {T("LABEL_REPUTATION")} {_game.Customers.Reputation}";
+				_shop2DStatusLabel.Visible = false;
+				_shop2DStatusLabel.Text = "";
 			}
 
 			var cartridge = _game.Inventory.GetProduct(1);
@@ -2626,13 +2820,19 @@ namespace Client.Scripts.Visuals
 				picker.Selected = Math.Clamp(selected, 0, picker.GetItemCount() - 1);
 		}
 
-		private void RefreshRuntimePanel()
+		private void RefreshRuntimePanel(bool fullRefresh)
 		{
 			if (_game == null)
 				return;
 
+			if (!fullRefresh)
+			{
+				RefreshRuntimeHudOnly();
+				return;
+			}
+
 			PopulateRuntimeLists();
-			ResetManagementChecklistIfNeeded();
+			ResetDailyTaskStateIfNeeded();
 			TrackCompletedReport();
 			var report = GetDisplayReport();
 			var previousReport = _previousCompletedReport;
@@ -2642,12 +2842,7 @@ namespace Client.Scripts.Visuals
 			NotifySimulationFeedback();
 
 			if (_runtimeHudLabel != null)
-			{
-				_runtimeHudLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
-				_runtimeHudLabel.ClipText = false;
-				_runtimeHudLabel.Text =
-					$"Zi {_game.CurrentDay}/{_game.LoopDayLimit} | {PhaseName(_game.CurrentPhase)} | Numerar {_game.Economy.Cash} | Profit {_game.RunProfit} ({_game.GetProfitMedalName()}) | Azi {liveDailyProfit} | Reputație {_game.Customers.Reputation} | Alerte {GetAlertCount()}";
-			}
+				SetRuntimeHudText(liveDailyProfit);
 
 			if (_runtimeReportLabel != null)
 				_runtimeReportLabel.Text = BuildRuntimeReport(report, previousReport);
@@ -2655,25 +2850,25 @@ namespace Client.Scripts.Visuals
 			if (_runtimeHintLabel != null)
 			{
 				_runtimeHintLabel.Visible = true;
-				_runtimeHintLabel.Text = BuildPhaseHint();
+				SetLabelTextIfChanged(_runtimeHintLabel, BuildPhaseHint(), ref _lastHintText);
 			}
-			if (_runtimeChecklistLabel != null)
+			if (_runtimeTaskBoxLabel != null)
 			{
-				_runtimeChecklistLabel.Text = BuildNextActionGuidance(report);
-				_runtimeChecklistLabel.Visible = true;
+				_runtimeTaskBoxLabel.Text = BuildTaskBoxText();
+				_runtimeTaskBoxLabel.Visible = true;
 			}
-			RefreshTaskChecklist();
+			RefreshMenuProgressIndicators();
 			if (_runtimeBusinessProgressBar != null)
 			{
 				_runtimeBusinessProgressBar.Visible = _game.CurrentPhase == DayPhase.Business;
-				_runtimeBusinessProgressBar.Value = GetBusinessProgressPercent();
+				SetBusinessProgressValue(GetBusinessProgressPercent());
 			}
 
 			if (_runtimeAlertSummaryLabel != null)
 			{
 				var alertSummary = BuildAlertSummary();
 				_runtimeAlertSummaryLabel.Visible = true;
-				_runtimeAlertSummaryLabel.Text = alertSummary;
+				SetLabelTextIfChanged(_runtimeAlertSummaryLabel, alertSummary, ref _lastAlertSummaryText);
 			}
 
 			if (IsTutorialActive()
@@ -2790,6 +2985,78 @@ namespace Client.Scripts.Visuals
 				_runtimeShelfSummaryLabel.Text = BuildShelfSummary();
 		}
 
+		private void RefreshRuntimeHudOnly()
+		{
+			if (_game == null)
+				return;
+
+			Money liveDailyProfit = _game.Economy.DailyRevenue - _game.Economy.DailyExpenses;
+			if (_runtimeHudLabel != null)
+				SetRuntimeHudText(liveDailyProfit);
+
+			if (_runtimeBusinessProgressBar != null)
+			{
+				_runtimeBusinessProgressBar.Visible = _game.CurrentPhase == DayPhase.Business;
+				SetBusinessProgressValue(GetBusinessProgressPercent());
+			}
+
+			if (_runtimeHintLabel != null && _game.CurrentPhase == DayPhase.Business)
+			{
+				_runtimeHintLabel.Visible = true;
+				SetLabelTextIfChanged(_runtimeHintLabel, BuildPhaseHint(), ref _lastHintText);
+			}
+
+			if (_runtimeAlertSummaryLabel != null)
+			{
+				_runtimeAlertSummaryLabel.Visible = true;
+				SetLabelTextIfChanged(_runtimeAlertSummaryLabel, BuildAlertSummary(), ref _lastAlertSummaryText);
+			}
+
+			NotifySimulationFeedback();
+		}
+
+		private void SetRuntimeHudText(Money liveDailyProfit)
+		{
+			if (_game == null || _runtimeHudLabel == null)
+				return;
+
+			_runtimeHudLabel.AutowrapMode = TextServer.AutowrapMode.WordSmart;
+			_runtimeHudLabel.ClipText = false;
+			int queueLength = _game.CurrentPhase == DayPhase.Business ? _game.CurrentQueueLength : 0;
+			string text = $"Zi {_game.CurrentDay}/{_game.LoopDayLimit} | {ShortPhaseName(_game.CurrentPhase)} | Lei {_game.Economy.Cash} | Rep {_game.Customers.Reputation} | Cl {_game.CurrentCustomersServedToday}/{_game.CurrentCustomersLostToday} | Stoc {_game.Inventory.TotalStorageUnits}/{_game.Inventory.StorageCapacity} | Coadă {queueLength}";
+			SetLabelTextIfChanged(_runtimeHudLabel, text, ref _lastHudText);
+		}
+
+		private static string ShortPhaseName(DayPhase phase)
+		{
+			return phase switch
+			{
+				DayPhase.Management => "Adm.",
+				DayPhase.Business => "Vânz.",
+				DayPhase.Closing => "Înch.",
+				DayPhase.Morning => "Dim.",
+				_ => phase.ToString()
+			};
+		}
+
+		private void SetBusinessProgressValue(double value)
+		{
+			if (_runtimeBusinessProgressBar == null || Math.Abs(_lastBusinessProgressValue - value) < 0.5)
+				return;
+
+			_runtimeBusinessProgressBar.Value = value;
+			_lastBusinessProgressValue = value;
+		}
+
+		private static void SetLabelTextIfChanged(Label label, string text, ref string cachedText)
+		{
+			if (cachedText == text)
+				return;
+
+			label.Text = text;
+			cachedText = text;
+		}
+
 		private string BuildPhaseHint()
 		{
 			if (_game == null)
@@ -2816,6 +3083,7 @@ namespace Client.Scripts.Visuals
 			return _tutorialStep switch
 			{
 				TutorialStep.StockShelf => "Tutorial: aprovizionează raftul din depozit.",
+				TutorialStep.SetPrice => "Tutorial: setează prețul unui produs înainte să deschizi magazinul.",
 				TutorialStep.OpenStore => "Tutorial: deschide magazinul când primul raft are produse.",
 				TutorialStep.ObserveCustomers => "Tutorial: clienții intră prin ușă și caută produse pe rafturi.",
 				TutorialStep.CashierQueue => "Tutorial: după cumpărături, clienții așteaptă la casă.",
@@ -2825,33 +3093,29 @@ namespace Client.Scripts.Visuals
 				TutorialStep.BuyFurniture => "Tutorial: rafturile noi se cumpără din Comenzi.",
 				TutorialStep.CurrentObjective => GetCurrentObjectiveText(),
 				TutorialStep.ReviewReport => "Tutorial: raportul îți explică ziua.",
-				TutorialStep.Complete => "Tutorial: continuă cu checklistul.",
+				TutorialStep.Complete => "Tutorial: continuă cu sarcinile rapide.",
 				_ => ""
 			};
 		}
 
-		private void ResetManagementChecklistIfNeeded()
+		private void ResetDailyTaskStateIfNeeded()
 		{
-			if (_game == null || _lastChecklistDay == _game.CurrentDay)
+			if (_game == null || _lastTaskResetDay == _game.CurrentDay)
 				return;
 
-			_lastChecklistDay = _game.CurrentDay;
-			ResetChecklistState();
+			_lastTaskResetDay = _game.CurrentDay;
+			ResetTaskState();
 		}
 
-		private void ResetChecklistState()
+		private void ResetTaskState()
 		{
 			_pricesChecked = false;
 			_stockChecked = false;
 			_ordersPlaced = false;
 			_staffChecked = false;
+			_staffChanged = false;
 			_eventsChecked = false;
-			_completedChecklistTaskIds.Clear();
-		}
-
-		private string BuildManagementChecklist()
-		{
-			return BuildNextActionGuidance(GetDisplayReport());
+			_reportsViewed = false;
 		}
 
 		private string BuildNextActionGuidance(DailyReport report)
@@ -2883,6 +3147,8 @@ namespace Client.Scripts.Visuals
 				priorities.Add("Rezolvă evenimentul activ.");
 			if (currentObjective?.Objective.Id == "stock_first_shelf")
 				priorities.Add("Deschide Comenzi și apasă Realimentează.");
+			if (currentObjective?.Objective.Id == "set_first_price")
+				priorities.Add("Deschide Prețuri, verifică produsul selectat și confirmă un preț valid.");
 			else if (HasLowShelfStock())
 				priorities.Add("Realimentează produsele aproape epuizate.");
 			if (currentObjective?.Objective.Id == "serve_first_customer")
@@ -2916,6 +3182,8 @@ namespace Client.Scripts.Visuals
 				return "";
 			if (_game.CurrentDecision != null)
 				return "Rezolvă evenimentul activ înainte de deschidere. Apoi verifică dacă prețurile și stocul sunt încă bune.";
+			if (_game.GetCurrentOnboardingObjective()?.Objective.Id == "set_first_price")
+				return "Setează un preț pentru produs înainte să vinzi. Deschide Prețuri și confirmă un preț valid.";
 			if (HasLowShelfStock())
 				return "Raftul este gol sau aproape gol. Aprovizionează-l pentru a atrage clienți.";
 			if (_game.Inventory.FreeStorageUnits < 10)
@@ -3623,20 +3891,107 @@ namespace Client.Scripts.Visuals
 			if (_game == null || _runtimePriceProductPicker == null || _runtimePriceInput == null)
 				return;
 
-			if (_runtimePriceInput.HasFocus())
+			int? id = _activePriceProductId ?? GetSelectedProductId(_runtimePriceProductPicker);
+			var product = id.HasValue ? _game.Inventory.GetProduct(id.Value) : null;
+			if (product != null)
+			{
+				SelectProductInPicker(_runtimePriceProductPicker, product.Id);
+				UpdatePriceTargetLabel(product);
+				if (_runtimePriceInput.HasFocus())
+					return;
+
+				_runtimePriceInput.Text = product.SalePrice.ToString();
+			}
+			else
+			{
+				ClearPriceEditTarget();
+			}
+		}
+
+		private bool BeginPriceEdit(int? productId, bool focusInput)
+		{
+			if (_game == null)
+				return false;
+
+			int? targetProductId = productId ?? GetSelectedProductId(_runtimePriceProductPicker) ?? _game.Inventory.Products.FirstOrDefault()?.Id;
+			var product = targetProductId.HasValue ? _game.Inventory.GetProduct(targetProductId.Value) : null;
+			if (product == null)
+			{
+				ClearPriceEditTarget();
+				Notify(T("NOTIFY_NO_PRODUCT"));
+				return false;
+			}
+
+			_activePriceProductId = product.Id;
+			SelectProductInPicker(_runtimePriceProductPicker, product.Id);
+			UpdatePriceTargetLabel(product);
+			if (_runtimePriceInput != null)
+			{
+				_runtimePriceInput.Text = product.SalePrice.ToString();
+				if (focusInput)
+					CallDeferred(nameof(FocusPriceInput));
+			}
+
+			return true;
+		}
+
+		private void ClearPriceEditTarget()
+		{
+			_activePriceProductId = null;
+			if (_runtimePriceTargetLabel != null)
+				_runtimePriceTargetLabel.Text = "Produs selectat: -";
+		}
+
+		private void UpdatePriceTargetLabel(Product product)
+		{
+			if (_runtimePriceTargetLabel != null)
+				_runtimePriceTargetLabel.Text = $"Produs selectat: {ProductName(product)}\nPreț curent: {product.SalePrice}. Confirmarea schimbă doar acest produs.";
+		}
+
+		private void FocusPriceInput()
+		{
+			if (_runtimePriceInput == null || _runtimePricesPopup?.Visible != true)
 				return;
 
-			int id = _runtimePriceProductPicker.GetItemCount() == 0
-				? -1
-				: _runtimePriceProductPicker.GetItemId(_runtimePriceProductPicker.Selected);
-			var product = _game.Inventory.GetProduct(id);
-			if (product != null)
-				_runtimePriceInput.Text = product.SalePrice.ToString();
+			_runtimePriceInput.GrabFocus();
+			_runtimePriceInput.SelectAll();
+		}
+
+		private static int? GetProductIdAt(OptionButton? picker, int index)
+		{
+			if (picker == null || index < 0 || index >= picker.GetItemCount())
+				return null;
+
+			int id = picker.GetItemId(index);
+			return id > 0 ? id : null;
+		}
+
+		private static int? GetSelectedProductId(OptionButton? picker)
+		{
+			return GetProductIdAt(picker, picker?.Selected ?? -1);
+		}
+
+		private bool SelectProductInPicker(OptionButton? picker, int productId)
+		{
+			if (picker == null)
+				return false;
+
+			for (int i = 0; i < picker.GetItemCount(); i++)
+			{
+				if (picker.GetItemId(i) == productId)
+				{
+					_updatingPricePickerSelection = true;
+					picker.Selected = i;
+					_updatingPricePickerSelection = false;
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		private void OnRuntimeOpenShopPressed()
 		{
-			GD.Print("UIManager: Open Shop pressed.");
 			if (_game == null)
 			{
 				GD.PrintErr("UIManager: Open Shop pressed before GameManager initialization.");
@@ -3644,19 +3999,8 @@ namespace Client.Scripts.Visuals
 				return;
 			}
 
-			if (_game.CurrentPhase == DayPhase.Management)
-			{
-				var warnings = BuildOpenShopWarnings();
-				if (warnings.Count > 0)
-				{
-					ShowOpenShopWarning(warnings);
-					return;
-				}
-			}
-
 			if (_game.StartBusiness())
 			{
-				SetChecklistTaskCompleted("prepare_opening", true);
 				Notify(T("NOTIFY_SHOP_OPEN"));
 				CompleteTutorialStep(TutorialStep.OpenStore);
 			}
@@ -3668,6 +4012,9 @@ namespace Client.Scripts.Visuals
 				Notify(T("NOTIFY_DAY_CLOSED"));
 			else
 				Notify(T("NOTIFY_CANNOT_OPEN"));
+
+			if (_game.CurrentPhase == DayPhase.Management)
+				UpdateTaskBoxDisplay();
 
 			Refresh();
 		}
@@ -3729,7 +4076,6 @@ namespace Client.Scripts.Visuals
 			HideOpenShopWarning();
 			if (_game != null && _game.StartBusiness())
 			{
-				SetChecklistTaskCompleted("prepare_opening", true);
 				Notify(T("NOTIFY_SHOP_OPEN"));
 				CompleteTutorialStep(TutorialStep.OpenStore);
 			}
@@ -3740,7 +4086,6 @@ namespace Client.Scripts.Visuals
 
 		private void OnRuntimeNextDayPressed()
 		{
-			GD.Print("UIManager: Next Day pressed.");
 			if (_game == null)
 			{
 				GD.PrintErr("UIManager: Next Day pressed before GameManager initialization.");
@@ -3768,7 +4113,6 @@ namespace Client.Scripts.Visuals
 
 		private void OnRuntimeResetPressed()
 		{
-			GD.Print("UIManager: Reset pressed.");
 			if (_game == null)
 			{
 				GD.PrintErr("UIManager: Reset pressed before GameManager initialization.");
@@ -3783,6 +4127,9 @@ namespace Client.Scripts.Visuals
 				() =>
 				{
 					_game?.ResetTick();
+					HideAllPopups();
+					ClearPriceEditTarget();
+					InvalidateShopNavigation();
 					Notify(T("NOTIFY_LOOP_RESET"));
 					Refresh();
 				});
@@ -3821,7 +4168,9 @@ namespace Client.Scripts.Visuals
 					_tickManager?.ClearGame();
 					_game = null;
 					_lastObservedPhase = null;
-					ResetChecklistState();
+					ClearPriceEditTarget();
+					InvalidateShopNavigation();
+					ResetTaskState();
 					SetStartupMode(true);
 					Notify("Ai revenit la meniul principal.");
 				});
@@ -3869,6 +4218,7 @@ namespace Client.Scripts.Visuals
 			}
 
 			_tickManager.StartNewGame(new GameStartSettings(storeName, difficulty, duration));
+			InvalidateShopNavigation();
 			HideStartupMenu();
 			Notify(T("NOTIFY_NEW_GAME"));
 			_tutorialSeenThisSession = false;
@@ -3914,39 +4264,48 @@ namespace Client.Scripts.Visuals
 
 		private void OnRuntimeApplyPricePressed()
 		{
-			GD.Print("UIManager: Apply Price pressed.");
 			if (_game == null || _runtimePriceProductPicker == null)
 			{
 				GD.PrintErr("UIManager: Apply Price pressed before runtime controls were initialized.");
 				return;
 			}
 
-			if (_runtimePriceProductPicker.GetItemCount() == 0)
+			int? productId = _activePriceProductId ?? GetSelectedProductId(_runtimePriceProductPicker);
+			if (!productId.HasValue)
 			{
 				Notify(T("NOTIFY_NO_PRODUCT"));
 				return;
 			}
 
-			int productId = _runtimePriceProductPicker.GetItemId(_runtimePriceProductPicker.Selected);
-			if (!TryParseMoney(_runtimePriceInput?.Text, out var price))
+			var product = _game.Inventory.GetProduct(productId.Value);
+			if (product == null)
+			{
+				Notify(T("NOTIFY_NO_PRODUCT"));
+				ClearPriceEditTarget();
+				return;
+			}
+
+			if (!TryParseMoney(_runtimePriceInput?.Text, out var price) || price < Money.Zero || price > GameManager.MaximumProductSalePrice)
 			{
 				Notify(T("NOTIFY_INVALID_PRICE"));
 				return;
 			}
 
-			if (_game.SetProductPrice(productId, price))
+			if (_game.SetProductPrice(productId.Value, price))
 			{
-				Notify(TF("NOTIFY_PRICE_UPDATED", productId, price));
+				_pricesChecked = true;
+				BeginPriceEdit(productId.Value, focusInput: false);
+				Notify(TF("NOTIFY_PRICE_UPDATED", ProductName(product)));
+				CompleteTutorialStep(TutorialStep.SetPrice);
 			}
 			else
-				Notify(_game.CurrentPhase == DayPhase.Management ? TF("NOTIFY_PRICE_FAILED", productId) : "Prețurile pot fi schimbate doar în Administrare.");
+				Notify(_game.CurrentPhase == DayPhase.Management ? TF("NOTIFY_PRICE_FAILED", productId.Value) : "Prețurile pot fi schimbate doar în Administrare.");
 
 			Refresh();
 		}
 
 		private void OnRuntimePlaceOrderPressed()
 		{
-			GD.Print("UIManager: Place Order pressed.");
 			if (_game == null || _runtimeOrderProductPicker == null || _runtimeOrderSupplierPicker == null)
 			{
 				GD.PrintErr("UIManager: Place Order pressed before runtime controls were initialized.");
@@ -4026,6 +4385,8 @@ namespace Client.Scripts.Visuals
 
 			if (_game.PurchaseShopCatalogItem(catalogItemId, productId))
 			{
+				_stockChecked = true;
+				InvalidateShopNavigation();
 				Notify(item == null
 					? T("NOTIFY_SHOP_PURCHASED")
 					: $"{FormatSignedMoney(Money.Zero - item.Cost)} • investiție magazin: {DescribeShopCatalogItem(item)}");
@@ -4061,7 +4422,10 @@ namespace Client.Scripts.Visuals
 			int shelfId = _runtimeShelfPicker.GetItemId(_runtimeShelfPicker.Selected);
 			int productId = _runtimeShelfProductPicker.GetItemId(_runtimeShelfProductPicker.Selected);
 			if (_game.AssignShelfProduct(shelfId, productId))
+			{
+				_stockChecked = true;
 				Notify(TF("NOTIFY_SHELF_ASSIGNED", shelfId, productId));
+			}
 			else
 				Notify(T("NOTIFY_SHELF_ASSIGN_FAILED"));
 
@@ -4092,7 +4456,10 @@ namespace Client.Scripts.Visuals
 			int moved = _game.RefillShelf(shelfId, quantity);
 			Notify(moved > 0 ? TF("NOTIFY_STOCK_MOVED", moved, shelfId) : T("NOTIFY_NO_STOCK_MOVED"));
 			if (moved > 0)
+			{
+				_stockChecked = true;
 				CompleteTutorialStep(TutorialStep.StockShelf);
+			}
 			Refresh();
 		}
 
@@ -4107,7 +4474,10 @@ namespace Client.Scripts.Visuals
 
 			Notify(movedTotal > 0 ? TF("NOTIFY_SHELVES_REFILLED", movedTotal) : T("NOTIFY_NO_REFILL"));
 			if (movedTotal > 0)
+			{
+				_stockChecked = true;
 				CompleteTutorialStep(TutorialStep.StockShelf);
+			}
 			Refresh();
 		}
 
@@ -4140,6 +4510,8 @@ namespace Client.Scripts.Visuals
 
 			if (_game.HireCandidate(candidateId))
 			{
+				_staffChecked = true;
+				_staffChanged = true;
 				Notify(TF("NOTIFY_HIRED", candidateName));
 				CompleteTutorialStep(TutorialStep.EmployeesHelp);
 			}
@@ -4171,7 +4543,11 @@ namespace Client.Scripts.Visuals
 
 			string name = _game.Employees.Employees[index].Name;
 			if (_game.FireEmployee(name))
+			{
+				_staffChecked = true;
+				_staffChanged = true;
 				Notify(TF("NOTIFY_FIRED", name));
+			}
 			else
 				Notify(TF("NOTIFY_FIRE_FAILED", name));
 
@@ -4185,8 +4561,8 @@ namespace Client.Scripts.Visuals
 
 			if (_game.ResolveEventDecision(option))
 			{
+				_eventsChecked = true;
 				Notify(T("NOTIFY_EVENT_APPLIED"));
-				HideEventPopup();
 			}
 			else
 				Notify(T("NOTIFY_NO_EVENT_DECISION"));
@@ -4201,6 +4577,7 @@ namespace Client.Scripts.Visuals
 
 			if (_game.TriggerPlaceholderEvent())
 			{
+				_eventsChecked = true;
 				ShowRuntimeSection(_runtimeEventSection);
 				ShowEventPopup();
 				Notify(T("NOTIFY_EVENT_CREATED"));
@@ -4252,10 +4629,9 @@ namespace Client.Scripts.Visuals
 			try
 			{
 				_game.SaveGame(path);
-				SetChecklistTaskCompleted("save_game", true);
 				Notify(TF("NOTIFY_SAVE_TO", displayName));
 				RefreshSaveSlotButtons();
-				UpdateChecklistDisplay();
+				UpdateTaskBoxDisplay();
 			}
 			catch (Exception ex)
 			{
@@ -4275,6 +4651,13 @@ namespace Client.Scripts.Visuals
 			try
 			{
 				_game.LoadGame(path);
+				HideAllPopups();
+				ClearPriceEditTarget();
+				InvalidateShopNavigation();
+				ResetTaskState();
+				_lastObservedPhase = null;
+				_lastCheckoutFeedbackSequence = _game.LastCheckoutFeedbackSequence;
+				_lastReputationFeedbackSequence = _game.LastReputationFeedbackSequence;
 				Refresh();
 				Notify(TF("NOTIFY_LOAD_FROM", displayName));
 				return true;

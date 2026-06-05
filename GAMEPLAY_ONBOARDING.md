@@ -25,6 +25,7 @@ The tutorial is intentionally lightweight: it teaches the existing loop without 
 The early checklist is backed by `OnboardingObjectiveCatalog`:
 
 - `Aprovizionează primul raft`
+- `Setează prețul unui produs`
 - `Servește primul client`
 - `Cumpără sau plasează un raft nou`
 - `Angajează un lucrător`

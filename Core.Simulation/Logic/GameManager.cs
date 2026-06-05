@@ -69,6 +69,7 @@ namespace Core.Simulation.Logic
         public int LastReputationFeedbackSequence { get; private set; }
         public string LastCheckoutFeedbackRo { get; private set; } = "";
         public int LastCheckoutFeedbackSequence { get; private set; }
+        public static readonly Money MaximumProductSalePrice = Money.FromUnits(9_999);
 
         private const int BusinessTicksPerDay = 1_800;
         private const int SalesWavesPerDay = 5;
@@ -83,6 +84,17 @@ namespace Core.Simulation.Logic
         private SalesSummary _businessSales;
         private readonly Dictionary<int, int> _dayProductSales = new();
         private readonly List<int> _purchasedCatalogItemIds = new();
+        private static readonly IReadOnlyDictionary<int, Money> DefaultProductSalePrices = new Dictionary<int, Money>
+        {
+            [1] = Money.FromUnits(45),
+            [2] = Money.FromUnits(180),
+            [3] = Money.FromUnits(85),
+            [4] = Money.FromUnits(75),
+            [5] = Money.FromUnits(120),
+            [6] = Money.FromUnits(340),
+            [7] = Money.FromUnits(28),
+            [8] = Money.FromUnits(520)
+        };
         private int _businessRestockBudgetRemaining;
         private int _dayRestockedUnits;
         private int _dayStorageOverflowUnits;
@@ -527,7 +539,7 @@ namespace Core.Simulation.Logic
         public bool SetProductPrice(int productId, Money salePrice)
         {
             var product = Inventory.GetProduct(productId);
-            if (product == null || salePrice < Money.Zero) return false;
+            if (product == null || salePrice < Money.Zero || salePrice > MaximumProductSalePrice) return false;
             product.SalePrice = salePrice;
             return true;
         }
@@ -976,6 +988,7 @@ namespace Core.Simulation.Logic
             return objectiveId switch
             {
                 "stock_first_shelf" => Inventory.Shelves.Any(shelf => shelf.CurrentStock > 0),
+                "set_first_price" => Inventory.Products.Any(product => DefaultProductSalePrices.TryGetValue(product.Id, out var defaultPrice) && product.SalePrice != defaultPrice),
                 "serve_first_customer" => CurrentCustomersServedToday > 0 || LastDailyReport.CustomersServed > 0,
                 "hire_first_worker" => Employees.Employees.Count > 3,
                 "buy_first_shelf" => Inventory.Shelves.Count > 8,

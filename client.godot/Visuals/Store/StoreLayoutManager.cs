@@ -33,6 +33,10 @@ namespace Client.Scripts.Visuals.Store
         private Rect2 _registerRect;
         private Rect2 _queueRect;
         private List<Rect2> _dynamicShelfSlots = new();
+        private Vector2 _lastShopSize = Vector2.Inf;
+        private string _lastObstacleSignature = "";
+        private List<Rect2> _cachedSolidShelfObstacles = new();
+        private IReadOnlyList<Vector2>? _cachedStaticNavigationAnchors;
 
         public StoreLayoutManager(
             Control shopView,
@@ -59,12 +63,24 @@ namespace Client.Scripts.Visuals.Store
 
         public Rect2 ShopBounds => _shopBounds;
 
+        public void InvalidateNavigationCache()
+        {
+            _lastShopSize = Vector2.Inf;
+            _lastObstacleSignature = "";
+            _cachedStaticNavigationAnchors = null;
+            _cachedSolidShelfObstacles.Clear();
+        }
+
         public void RefreshLayout()
         {
             Vector2 shopSize = _shopView.Size;
             if (shopSize.X < 320f || shopSize.Y < 240f)
                 shopSize = new Vector2(960f, 620f);
 
+            if (_lastShopSize.DistanceTo(shopSize) <= 0.5f)
+                return;
+
+            _lastShopSize = shopSize;
             _shopBounds = new Rect2(Vector2.Zero, shopSize);
             _entranceRect = ResolveRect(_entranceZone, new Rect2(350f, 543f, 202f, 62f));
             _shelfCartridgeRect = ResolveRect(_shelfCartridgeZone, new Rect2(59f, 200f, 196f, 116f));
@@ -75,6 +91,8 @@ namespace Client.Scripts.Visuals.Store
             _registerRect = ResolveRect(_registerZone, new Rect2(788f, 351f, 146f, 134f));
             _queueRect = ResolveRect(_queueLane, new Rect2(698f, 488f, 236f, 46f));
             _dynamicShelfSlots = BuildDynamicShelfSlots();
+            _cachedStaticNavigationAnchors = null;
+            _lastObstacleSignature = "";
         }
 
         public Control? CreateShelfVisualFromOriginal(ShelfDisplayType displayType)
@@ -131,9 +149,16 @@ namespace Client.Scripts.Visuals.Store
 
         public IReadOnlyList<Rect2> GetSolidShelfObstacles(GameManager? game)
         {
-            return GetAllShelfPlacements(game)
+            RefreshLayout();
+            string signature = BuildObstacleSignature(game);
+            if (signature == _lastObstacleSignature)
+                return _cachedSolidShelfObstacles;
+
+            _cachedSolidShelfObstacles = GetAllShelfPlacements(game)
                 .Select(placement => ExpandRect(placement.Rect, ObstaclePadding))
                 .ToList();
+            _lastObstacleSignature = signature;
+            return _cachedSolidShelfObstacles;
         }
 
         public Vector2 GetSpawnPoint(int index)
@@ -478,7 +503,10 @@ namespace Client.Scripts.Visuals.Store
 
         private IReadOnlyList<Vector2> GetStaticNavigationAnchors()
         {
-            return new[]
+            if (_cachedStaticNavigationAnchors != null)
+                return _cachedStaticNavigationAnchors;
+
+            _cachedStaticNavigationAnchors = new[]
             {
                 ClampPoint(new Vector2(_entranceRect.GetCenter().X, _entranceRect.Position.Y - 18f)),
                 ClampPoint(new Vector2(_shelfCartridgeRect.Position.X + 36f, _shelfCartridgeRect.Position.Y - 24f)),
@@ -492,6 +520,20 @@ namespace Client.Scripts.Visuals.Store
                 ClampPoint(new Vector2(_queueRect.Position.X - 18f, _queueRect.GetCenter().Y)),
                 ClampPoint(new Vector2(_queueRect.GetCenter().X, _queueRect.Position.Y - 20f))
             };
+            return _cachedStaticNavigationAnchors;
+        }
+
+        private string BuildObstacleSignature(GameManager? game)
+        {
+            var builder = new System.Text.StringBuilder(128);
+            builder.Append(MathF.Round(_shopBounds.Size.X)).Append('x').Append(MathF.Round(_shopBounds.Size.Y));
+            if (game == null)
+                return builder.ToString();
+
+            foreach (var shelf in game.Inventory.Shelves.OrderBy(shelf => shelf.Id))
+                builder.Append("|s").Append(shelf.Id).Append(':').Append(shelf.ProductId).Append(':').Append(shelf.Capacity).Append(':').Append((int)shelf.DisplayType);
+
+            return builder.ToString();
         }
 
         private IEnumerable<Vector2> GetObstacleWaypoints(Rect2 obstacle)

@@ -12,10 +12,12 @@ namespace Client.Scripts.Systems
         public const double FixedStep = 1.0 / 60.0;
 
         private double _accumulator = 0.0;
+        private double _uiRefreshAccumulator = 0.0;
         public double Alpha { get; private set; }
         public double SimulationSpeed { get; private set; } = 1.0;
 
         [Export] public UIManager? UIManager { get; set; }
+        [Export] public double BusinessUiRefreshInterval { get; set; } = 0.20;
 
         public GameManager? Game { get; private set; }
         public EconomyViewModel EconomyViewModel { get; private set; } = new();
@@ -47,6 +49,7 @@ namespace Client.Scripts.Systems
                 return;
 
             _accumulator += delta * SimulationSpeed;
+            _uiRefreshAccumulator += delta;
 
             int loops = 0;
             while (_accumulator >= FixedStep)
@@ -67,13 +70,17 @@ namespace Client.Scripts.Systems
             if (loops > 0)
             {
                 EconomyViewModel.Update(Game.Economy.Cash);
-                UIManager?.Refresh();
+                bool forceFullUiRefresh = _uiRefreshAccumulator >= BusinessUiRefreshInterval;
+                UIManager?.Refresh(forceFullUiRefresh);
+                if (forceFullUiRefresh)
+                    _uiRefreshAccumulator = 0.0;
             }
         }
 
         public void ResetAccumulator()
         {
             _accumulator = 0.0;
+            _uiRefreshAccumulator = 0.0;
             Alpha = 0.0;
         }
 
