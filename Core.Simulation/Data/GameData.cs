@@ -47,7 +47,7 @@ namespace Core.Simulation.Data
         int RunDurationDays
     )
     {
-        public static GameStartSettings Default => new("Magazin Retro", GameDifficulty.Normal, 14);
+        public static GameStartSettings Default => new("Magazin Retro", GameDifficulty.Relaxed, 14);
     }
 
     public sealed record OnboardingObjective(

@@ -1,0 +1,1460 @@
+{
+  "cs": [
+    "./Core.Simulation.Tests/Program.cs",
+    "./Core.Simulation.Tests/RegressionCoverageTests.cs",
+    "./Core.Simulation/Data/AIState.cs",
+    "./Core.Simulation/Data/DailyReport.cs",
+    "./Core.Simulation/Data/DayPhase.cs",
+    "./Core.Simulation/Data/EntityBuffer.cs",
+    "./Core.Simulation/Data/GameData.cs",
+    "./Core.Simulation/Data/GridMap.cs",
+    "./Core.Simulation/Data/IntVector2.cs",
+    "./Core.Simulation/Data/Item.cs",
+    "./Core.Simulation/Data/LoopResult.cs",
+    "./Core.Simulation/Data/LoopStatus.cs",
+    "./Core.Simulation/Data/Money.cs",
+    "./Core.Simulation/Data/SalesSummary.cs",
+    "./Core.Simulation/Logic/BehaviorTreeRunner.cs",
+    "./Core.Simulation/Logic/ConveyorSystem.cs",
+    "./Core.Simulation/Logic/CustomerManager.cs",
+    "./Core.Simulation/Logic/DeterministicRandom.cs",
+    "./Core.Simulation/Logic/EconomyManager.cs",
+    "./Core.Simulation/Logic/EmployeeManager.cs",
+    "./Core.Simulation/Logic/EventManager.cs",
+    "./Core.Simulation/Logic/GameManager.cs",
+    "./Core.Simulation/Logic/InventoryManager.cs",
+    "./Core.Simulation/Logic/Pathfinder.cs",
+    "./Core.Simulation/Logic/ProgressionManager.cs",
+    "./Core.Simulation/Logic/SimulationLoop.cs",
+    "./Core.Simulation/Logic/SimulationManager.cs",
+    "./Core.Simulation/Logic/SupplierManager.cs",
+    "./Core.Simulation/Persistence/DataPersistenceManager.cs",
+    "./Core.Simulation/Serialization/CommandBuffer.cs",
+    "./Core.Simulation/Serialization/GameCommand.cs",
+    "./Core.Simulation/Serialization/IntVector2Formatter.cs",
+    "./Core.Simulation/Serialization/SnapshotManager.cs",
+    "./client.godot/Architecture/MVVM/EconomyViewModel.cs",
+    "./client.godot/Boot/Startup.cs",
+    "./client.godot/Localization/Localizer.cs",
+    "./client.godot/Loop/LoopManager.cs",
+    "./client.godot/Systems/TickManager.cs",
+    "./client.godot/Visuals/Store/CustomerVisualController.cs",
+    "./client.godot/Visuals/Store/EmployeeVisualController.cs",
+    "./client.godot/Visuals/Store/StoreFurnitureVisualController.cs",
+    "./client.godot/Visuals/Store/StoreLayoutManager.cs",
+    "./client.godot/Visuals/UI/ContextualHelpTooltip.cs",
+    "./client.godot/Visuals/UIManager.cs"
+  ],
+  "scenes": [
+    "./client.godot/Assets/UI/components/TaskChecklist.tscn",
+    "./client.godot/Assets/UI/components/TaskChecklistItem.tscn",
+    "./client.godot/Scenes/GameMain.tscn",
+    "./client.godot/Scenes/NewGameSetupPanel.tscn",
+    "./client.godot/Scenes/UI/Buttons/DisabledButton.tscn",
+    "./client.godot/Scenes/UI/Buttons/IconButton.tscn",
+    "./client.godot/Scenes/UI/Buttons/PhaseTransitionButton.tscn",
+    "./client.godot/Scenes/UI/Buttons/PrimaryButton.tscn",
+    "./client.godot/Scenes/UI/Buttons/SecondaryButton.tscn",
+    "./client.godot/Scenes/UI/Buttons/WarningButton.tscn",
+    "./client.godot/Scenes/UIRoot.tscn"
+  ],
+  "other": [
+    "./Core.Simulation.Tests/Core.Simulation.Tests.csproj",
+    "./Core.Simulation/Core.Simulation.csproj",
+    "./E2E_FIRST_RUN_CHECKLIST.md",
+    "./E2E_PLAYER_EXPERIENCE_AUDIT.md",
+    "./FLOW_AND_OPTIMIZATION_CHECKLIST.md",
+    "./GAMEPLAY_ONBOARDING.md",
+    "./KNOWN_ISSUES.md",
+    "./OPTIMIZATION_AND_FLOW_AUDIT.md",
+    "./PLAYER_EXPERIENCE_AUDIT.md",
+    "./README.md",
+    "./RELEASE_CHECKLIST.md",
+    "./TESTING.md",
+    "./UI_CLEANUP_CHECKLIST.md",
+    "./UI_FLOW_CHECKLIST.md",
+    "./client.godot/Assets/UI/scripts/task_checklist.gd",
+    "./client.godot/Assets/UI/scripts/task_checklist_item.gd",
+    "./client.godot/Localization/ro.csv",
+    "./client.godot/client.godot.csproj",
+    "./client.godot/project.godot",
+    "./docs/ProjectAuditReport.md"
+  ],
+  "./Core.Simulation.Tests/Program.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "Core.Simulation.Logic",
+      "Xunit"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation.Tests/RegressionCoverageTests.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "Core.Simulation.Logic",
+      "Core.Simulation.Persistence",
+      "System.Globalization",
+      "System.Text.Json.Nodes",
+      "System.Text.RegularExpressions",
+      "Xunit"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Data/AIState.cs": {
+    "using": [],
+    "classes": []
+  },
+  "./Core.Simulation/Data/DailyReport.cs": {
+    "using": [],
+    "classes": []
+  },
+  "./Core.Simulation/Data/DayPhase.cs": {
+    "using": [],
+    "classes": []
+  },
+  "./Core.Simulation/Data/EntityBuffer.cs": {
+    "using": [
+      "System",
+      "System.Runtime.CompilerServices",
+      "System.Runtime.InteropServices"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Data/GameData.cs": {
+    "using": [
+      "System",
+      "System.Collections.Generic"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Data/GridMap.cs": {
+    "using": [
+      "System",
+      "System.Runtime.CompilerServices"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Data/IntVector2.cs": {
+    "using": [],
+    "classes": []
+  },
+  "./Core.Simulation/Data/Item.cs": {
+    "using": [
+      "System.Runtime.InteropServices"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Data/LoopResult.cs": {
+    "using": [],
+    "classes": []
+  },
+  "./Core.Simulation/Data/LoopStatus.cs": {
+    "using": [],
+    "classes": []
+  },
+  "./Core.Simulation/Data/Money.cs": {
+    "using": [
+      "System"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Data/SalesSummary.cs": {
+    "using": [],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/BehaviorTreeRunner.cs": {
+    "using": [
+      "Core.Simulation.Data"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/ConveyorSystem.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "System",
+      "System.Threading.Tasks"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/CustomerManager.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "System.Collections.Generic"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/DeterministicRandom.cs": {
+    "using": [],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/EconomyManager.cs": {
+    "using": [
+      "Core.Simulation.Data"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/EmployeeManager.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "System",
+      "System.Collections.Generic",
+      "System.Linq"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/EventManager.cs": {
+    "using": [
+      "Core.Simulation.Data"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/GameManager.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "Core.Simulation.Persistence",
+      "Core.Simulation.Serialization",
+      "System",
+      "System.Collections.Generic",
+      "System.Linq"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/InventoryManager.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "System",
+      "System.Collections.Generic",
+      "System.Linq"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/Pathfinder.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "System",
+      "System.Collections",
+      "System.Collections.Generic"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/ProgressionManager.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "System.Collections.Generic",
+      "System.Linq"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/SimulationLoop.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "Core.Simulation.Serialization",
+      "System"
+    ],
+    "classes": [
+      "SimulationLoop"
+    ]
+  },
+  "./Core.Simulation/Logic/SimulationManager.cs": {
+    "using": [
+      "Core.Simulation.Serialization",
+      "System",
+      "System.Collections.Generic"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Logic/SupplierManager.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "System.Collections.Generic",
+      "System.Linq"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Persistence/DataPersistenceManager.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "Core.Simulation.Logic",
+      "System",
+      "System.Collections.Generic",
+      "System.IO",
+      "System.Linq",
+      "System.Text.Json",
+      "System.Text.Json.Serialization"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Serialization/CommandBuffer.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "System"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Serialization/GameCommand.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "MessagePack"
+    ],
+    "classes": []
+  },
+  "./Core.Simulation/Serialization/IntVector2Formatter.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "MessagePack",
+      "MessagePack.Formatters",
+      "MessagePack.Resolvers"
+    ],
+    "classes": [
+      "IntVector2Formatter"
+    ]
+  },
+  "./Core.Simulation/Serialization/SnapshotManager.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "System"
+    ],
+    "classes": []
+  },
+  "./client.godot/Architecture/MVVM/EconomyViewModel.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "System.ComponentModel",
+      "System.Runtime.CompilerServices"
+    ],
+    "classes": [
+      "EconomyViewModel"
+    ]
+  },
+  "./client.godot/Boot/Startup.cs": {
+    "using": [
+      "Client.Localization",
+      "Core.Simulation.Serialization",
+      "Godot",
+      "MessagePack",
+      "MessagePack.Formatters",
+      "MessagePack.Resolvers"
+    ],
+    "classes": [
+      "Startup"
+    ]
+  },
+  "./client.godot/Localization/Localizer.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "Godot",
+      "System",
+      "System.Collections.Generic",
+      "System.Globalization"
+    ],
+    "classes": []
+  },
+  "./client.godot/Loop/LoopManager.cs": {
+    "using": [
+      "Client.Scripts.Systems",
+      "Core.Simulation.Data",
+      "Core.Simulation.Serialization",
+      "Godot"
+    ],
+    "classes": [
+      "LoopManager"
+    ]
+  },
+  "./client.godot/Systems/TickManager.cs": {
+    "using": [
+      "Client.Architecture.MVVM",
+      "Client.Scripts.Loop",
+      "Client.Scripts.Visuals",
+      "Core.Simulation.Data",
+      "Core.Simulation.Logic",
+      "Godot"
+    ],
+    "classes": [
+      "TickManager"
+    ]
+  },
+  "./client.godot/Visuals/Store/CustomerVisualController.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "Core.Simulation.Logic",
+      "Godot",
+      "System",
+      "System.Collections.Generic",
+      "System.Linq"
+    ],
+    "classes": []
+  },
+  "./client.godot/Visuals/Store/EmployeeVisualController.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "Core.Simulation.Logic",
+      "Godot",
+      "System",
+      "System.Collections.Generic",
+      "System.Linq"
+    ],
+    "classes": []
+  },
+  "./client.godot/Visuals/Store/StoreFurnitureVisualController.cs": {
+    "using": [
+      "Client.Localization",
+      "Core.Simulation.Data",
+      "Core.Simulation.Logic",
+      "Godot",
+      "System.Collections.Generic",
+      "System.Linq"
+    ],
+    "classes": []
+  },
+  "./client.godot/Visuals/Store/StoreLayoutManager.cs": {
+    "using": [
+      "Core.Simulation.Data",
+      "Core.Simulation.Logic",
+      "Godot",
+      "System",
+      "System.Collections.Generic",
+      "System.Linq"
+    ],
+    "classes": []
+  },
+  "./client.godot/Visuals/UI/ContextualHelpTooltip.cs": {
+    "using": [
+      "Godot",
+      "System",
+      "System.Collections.Generic"
+    ],
+    "classes": []
+  },
+  "./client.godot/Visuals/UIManager.cs": {
+    "using": [
+      "Client.Localization",
+      "Client.Scripts.Systems",
+      "Client.Scripts.Visuals.Store",
+      "Client.Scripts.Visuals.UI",
+      "Core.Simulation.Data",
+      "Core.Simulation.Logic",
+      "Core.Simulation.Persistence",
+      "Godot",
+      "System",
+      "System.Collections.Generic",
+      "System.IO",
+      "System.Linq",
+      "System.Reflection",
+      "System.Text"
+    ],
+    "classes": [
+      "UIManager"
+    ]
+  },
+  "./client.godot/Assets/UI/components/TaskChecklist.tscn": {
+    "ext_resource": [
+      [
+        "Script",
+        "",
+        "res://Assets/UI/scripts/task_checklist.gd"
+      ],
+      [
+        "Theme",
+        "",
+        "res://Themes/ChronoTheme.tres"
+      ]
+    ],
+    "nodes": [
+      [
+        "TaskChecklist",
+        "PanelContainer"
+      ]
+    ]
+  },
+  "./client.godot/Assets/UI/components/TaskChecklistItem.tscn": {
+    "ext_resource": [
+      [
+        "Script",
+        "",
+        "res://Assets/UI/scripts/task_checklist_item.gd"
+      ],
+      [
+        "Theme",
+        "",
+        "res://Themes/ChronoTheme.tres"
+      ]
+    ],
+    "nodes": [
+      [
+        "TaskChecklistItem",
+        "PanelContainer"
+      ]
+    ]
+  },
+  "./client.godot/Scenes/GameMain.tscn": {
+    "ext_resource": [
+      [
+        "Script",
+        "",
+        "res://Systems/TickManager.cs"
+      ],
+      [
+        "Script",
+        "",
+        "res://Loop/LoopManager.cs"
+      ],
+      [
+        "PackedScene",
+        "uid://boh8vvbktwa67",
+        "res://Scenes/UIRoot.tscn"
+      ]
+    ],
+    "nodes": [
+      [
+        "GameMain",
+        "Node"
+      ],
+      [
+        "TickManager",
+        "Node"
+      ],
+      [
+        "LoopManager",
+        "Node"
+      ],
+      [
+        "CanvasLayer",
+        "CanvasLayer"
+      ]
+    ]
+  },
+  "./client.godot/Scenes/NewGameSetupPanel.tscn": {
+    "ext_resource": [
+      [
+        "Theme",
+        "",
+        "res://Themes/ChronoTheme.tres"
+      ]
+    ],
+    "nodes": [
+      [
+        "NewGameSetupPanel",
+        "PanelContainer"
+      ],
+      [
+        "SetupCenter",
+        "CenterContainer"
+      ],
+      [
+        "SetupCard",
+        "PanelContainer"
+      ],
+      [
+        "SetupMargin",
+        "MarginContainer"
+      ],
+      [
+        "SetupRoot",
+        "VBoxContainer"
+      ],
+      [
+        "SetupTitle",
+        "Label"
+      ],
+      [
+        "StoreNameLabel",
+        "Label"
+      ],
+      [
+        "NewGameStoreNameInput",
+        "LineEdit"
+      ],
+      [
+        "DifficultyLabel",
+        "Label"
+      ],
+      [
+        "NewGameDifficultyPicker",
+        "OptionButton"
+      ],
+      [
+        "DurationLabel",
+        "Label"
+      ],
+      [
+        "NewGameDurationPicker",
+        "OptionButton"
+      ],
+      [
+        "NewGameValidationLabel",
+        "Label"
+      ],
+      [
+        "SetupButtons",
+        "HBoxContainer"
+      ],
+      [
+        "NewGameBackButton",
+        "Button"
+      ],
+      [
+        "NewGameStartButton",
+        "Button"
+      ]
+    ]
+  },
+  "./client.godot/Scenes/UI/Buttons/DisabledButton.tscn": {
+    "ext_resource": [
+      [
+        "Theme",
+        "",
+        "res://Themes/ChronoTheme.tres"
+      ]
+    ],
+    "nodes": [
+      [
+        "DisabledButton",
+        "Button"
+      ]
+    ]
+  },
+  "./client.godot/Scenes/UI/Buttons/IconButton.tscn": {
+    "ext_resource": [
+      [
+        "Theme",
+        "",
+        "res://Themes/ChronoTheme.tres"
+      ]
+    ],
+    "nodes": [
+      [
+        "IconButton",
+        "Button"
+      ]
+    ]
+  },
+  "./client.godot/Scenes/UI/Buttons/PhaseTransitionButton.tscn": {
+    "ext_resource": [
+      [
+        "Theme",
+        "",
+        "res://Themes/ChronoTheme.tres"
+      ]
+    ],
+    "nodes": [
+      [
+        "PhaseTransitionButton",
+        "Button"
+      ]
+    ]
+  },
+  "./client.godot/Scenes/UI/Buttons/PrimaryButton.tscn": {
+    "ext_resource": [
+      [
+        "Theme",
+        "",
+        "res://Themes/ChronoTheme.tres"
+      ]
+    ],
+    "nodes": [
+      [
+        "PrimaryButton",
+        "Button"
+      ]
+    ]
+  },
+  "./client.godot/Scenes/UI/Buttons/SecondaryButton.tscn": {
+    "ext_resource": [
+      [
+        "Theme",
+        "",
+        "res://Themes/ChronoTheme.tres"
+      ]
+    ],
+    "nodes": [
+      [
+        "SecondaryButton",
+        "Button"
+      ]
+    ]
+  },
+  "./client.godot/Scenes/UI/Buttons/WarningButton.tscn": {
+    "ext_resource": [
+      [
+        "Theme",
+        "",
+        "res://Themes/ChronoTheme.tres"
+      ]
+    ],
+    "nodes": [
+      [
+        "WarningButton",
+        "Button"
+      ]
+    ]
+  },
+  "./client.godot/Scenes/UIRoot.tscn": {
+    "ext_resource": [
+      [
+        "Script",
+        "uid://c7kxxui87q84e",
+        "res://Visuals/UIManager.cs"
+      ],
+      [
+        "PackedScene",
+        "",
+        "res://Scenes/NewGameSetupPanel.tscn"
+      ],
+      [
+        "Theme",
+        "uid://dkci32srtbdk6",
+        "res://Themes/ChronoTheme.tres"
+      ]
+    ],
+    "nodes": [
+      [
+        "UIRoot",
+        "Control"
+      ],
+      [
+        "GameplayRoot",
+        "MarginContainer"
+      ],
+      [
+        "AppVBox",
+        "VBoxContainer"
+      ],
+      [
+        "TopMenu",
+        "PanelContainer"
+      ],
+      [
+        "TopMargin",
+        "MarginContainer"
+      ],
+      [
+        "TopRow",
+        "HBoxContainer"
+      ],
+      [
+        "RuntimeHudLabel",
+        "Label"
+      ],
+      [
+        "RuntimeOpenShopButton",
+        "Button"
+      ],
+      [
+        "RuntimeNextDayButton",
+        "Button"
+      ],
+      [
+        "RuntimePauseSpeedButton",
+        "Button"
+      ],
+      [
+        "RuntimeNormalSpeedButton",
+        "Button"
+      ],
+      [
+        "RuntimeFastSpeedButton",
+        "Button"
+      ],
+      [
+        "RuntimeFasterSpeedButton",
+        "Button"
+      ],
+      [
+        "RuntimeSaveButton",
+        "Button"
+      ],
+      [
+        "RuntimeLoadButton",
+        "Button"
+      ],
+      [
+        "RuntimeResetButton",
+        "Button"
+      ],
+      [
+        "RuntimeMainMenuButton",
+        "Button"
+      ],
+      [
+        "BodyHBox",
+        "HBoxContainer"
+      ],
+      [
+        "LeftMenu",
+        "PanelContainer"
+      ],
+      [
+        "MarginContainer",
+        "MarginContainer"
+      ],
+      [
+        "LeftMenuScroll",
+        "ScrollContainer"
+      ],
+      [
+        "Root",
+        "VBoxContainer"
+      ],
+      [
+        "PanelTitle",
+        "Label"
+      ],
+      [
+        "RuntimeNotificationLabel",
+        "Label"
+      ],
+      [
+        "RuntimeHintLabel",
+        "Label"
+      ],
+      [
+        "RuntimeTaskBoxLabel",
+        "Label"
+      ],
+      [
+        "RuntimeBusinessProgressBar",
+        "ProgressBar"
+      ],
+      [
+        "RuntimeTabs",
+        "VBoxContainer"
+      ],
+      [
+        "OperationsTitle",
+        "Label"
+      ],
+      [
+        "OperationsButtons",
+        "VBoxContainer"
+      ],
+      [
+        "RuntimeManageTabButton",
+        "Button"
+      ],
+      [
+        "RuntimeStockTabButton",
+        "Button"
+      ],
+      [
+        "RuntimeStaffTabButton",
+        "Button"
+      ],
+      [
+        "AnalysisTitle",
+        "Label"
+      ],
+      [
+        "AnalysisButtons",
+        "VBoxContainer"
+      ],
+      [
+        "RuntimeEventTabButton",
+        "Button"
+      ],
+      [
+        "RuntimeReportTabButton",
+        "Button"
+      ],
+      [
+        "RuntimeStatsTabButton",
+        "Button"
+      ],
+      [
+        "AlertsTitle",
+        "Label"
+      ],
+      [
+        "RuntimeAlertSummaryLabel",
+        "Label"
+      ],
+      [
+        "RuntimePriceSection",
+        "VBoxContainer"
+      ],
+      [
+        "RuntimeOpenPricesPopupButton",
+        "Button"
+      ],
+      [
+        "RuntimeStockSection",
+        "VBoxContainer"
+      ],
+      [
+        "RuntimeOpenOrdersPopupButton",
+        "Button"
+      ],
+      [
+        "RuntimeShelfSummaryLabel",
+        "Label"
+      ],
+      [
+        "RuntimeStaffSection",
+        "VBoxContainer"
+      ],
+      [
+        "RuntimeOpenStaffPopupButton",
+        "Button"
+      ],
+      [
+        "RuntimeEventSection",
+        "VBoxContainer"
+      ],
+      [
+        "RuntimeOpenEventPopupButton",
+        "Button"
+      ],
+      [
+        "RuntimeReportSection",
+        "VBoxContainer"
+      ],
+      [
+        "RuntimeOpenReportPopupButton",
+        "Button"
+      ],
+      [
+        "MainGameArea",
+        "HBoxContainer"
+      ],
+      [
+        "Shop2DView",
+        "Control"
+      ],
+      [
+        "ShopBackdrop",
+        "ColorRect"
+      ],
+      [
+        "ShopFloor",
+        "ColorRect"
+      ],
+      [
+        "AisleHorizontal2D",
+        "ColorRect"
+      ],
+      [
+        "AisleVertical2D",
+        "ColorRect"
+      ],
+      [
+        "Shop2DStatusLabel",
+        "Label"
+      ],
+      [
+        "EntranceZone2D",
+        "ColorRect"
+      ],
+      [
+        "EntranceLabel",
+        "Label"
+      ],
+      [
+        "ShelfCartridgeZone2D",
+        "ColorRect"
+      ],
+      [
+        "CartridgeIcon",
+        "ColorRect"
+      ],
+      [
+        "Shop2DShelfCartridgeLabel",
+        "Label"
+      ],
+      [
+        "ShelfConsoleZone2D",
+        "ColorRect"
+      ],
+      [
+        "ConsoleIcon",
+        "ColorRect"
+      ],
+      [
+        "Shop2DShelfConsoleLabel",
+        "Label"
+      ],
+      [
+        "ShelfCollectorZone2D",
+        "ColorRect"
+      ],
+      [
+        "CollectorIcon",
+        "ColorRect"
+      ],
+      [
+        "Shop2DShelfCollectorLabel",
+        "Label"
+      ],
+      [
+        "RegisterZone2D",
+        "ColorRect"
+      ],
+      [
+        "Shop2DRegisterLabel",
+        "Label"
+      ],
+      [
+        "StorageZone2D",
+        "ColorRect"
+      ],
+      [
+        "Shop2DStorageLabel",
+        "Label"
+      ],
+      [
+        "StorageFillTrack",
+        "ColorRect"
+      ],
+      [
+        "StorageFillBar",
+        "ColorRect"
+      ],
+      [
+        "DeliveryZone2D",
+        "ColorRect"
+      ],
+      [
+        "DeliveryLabel",
+        "Label"
+      ],
+      [
+        "DeliveryCountLabel",
+        "Label"
+      ],
+      [
+        "QueueLane2D",
+        "ColorRect"
+      ],
+      [
+        "QueueLabel",
+        "Label"
+      ],
+      [
+        "QueueSpot1",
+        "ColorRect"
+      ],
+      [
+        "QueueSpot2",
+        "ColorRect"
+      ],
+      [
+        "QueueSpot3",
+        "ColorRect"
+      ],
+      [
+        "CustomerMarker1",
+        "ColorRect"
+      ],
+      [
+        "CustomerMarker2",
+        "ColorRect"
+      ],
+      [
+        "CustomerMarker3",
+        "ColorRect"
+      ],
+      [
+        "CustomerMarker4",
+        "ColorRect"
+      ],
+      [
+        "CashierMarker",
+        "ColorRect"
+      ],
+      [
+        "CashierLabel",
+        "Label"
+      ],
+      [
+        "StockerMarker",
+        "ColorRect"
+      ],
+      [
+        "StockerLabel",
+        "Label"
+      ],
+      [
+        "ManagerMarker",
+        "ColorRect"
+      ],
+      [
+        "ManagerLabel",
+        "Label"
+      ],
+      [
+        "DeliveryCrateMarker1",
+        "ColorRect"
+      ],
+      [
+        "DeliveryCrateMarker2",
+        "ColorRect"
+      ],
+      [
+        "RightContextPanel",
+        "PanelContainer"
+      ],
+      [
+        "RightContextMargin",
+        "MarginContainer"
+      ],
+      [
+        "RightContextRoot",
+        "VBoxContainer"
+      ],
+      [
+        "RightContextTitle",
+        "Label"
+      ],
+      [
+        "RightContextLabel",
+        "Label"
+      ],
+      [
+        "ModalRoot",
+        "Control"
+      ],
+      [
+        "RuntimePricesPopup",
+        "PanelContainer"
+      ],
+      [
+        "PricesPopupMargin",
+        "MarginContainer"
+      ],
+      [
+        "PricesPopupRoot",
+        "VBoxContainer"
+      ],
+      [
+        "PricesPopupHeader",
+        "HBoxContainer"
+      ],
+      [
+        "PricesPopupTitle",
+        "Label"
+      ],
+      [
+        "RuntimeClosePricesPopupButton",
+        "Button"
+      ],
+      [
+        "RuntimePriceProductPicker",
+        "OptionButton"
+      ],
+      [
+        "RuntimePriceTargetLabel",
+        "Label"
+      ],
+      [
+        "RuntimePriceInput",
+        "LineEdit"
+      ],
+      [
+        "RuntimeApplyPriceButton",
+        "Button"
+      ],
+      [
+        "RuntimeStaffPopup",
+        "PanelContainer"
+      ],
+      [
+        "StaffPopupMargin",
+        "MarginContainer"
+      ],
+      [
+        "StaffPopupRoot",
+        "VBoxContainer"
+      ],
+      [
+        "StaffPopupHeader",
+        "HBoxContainer"
+      ],
+      [
+        "StaffPopupTitle",
+        "Label"
+      ],
+      [
+        "RuntimeCloseStaffPopupButton",
+        "Button"
+      ],
+      [
+        "RuntimeStaffSummaryLabel",
+        "Label"
+      ],
+      [
+        "CandidateLabel",
+        "Label"
+      ],
+      [
+        "RuntimeCandidatePicker",
+        "OptionButton"
+      ],
+      [
+        "RuntimeHireCandidateButton",
+        "Button"
+      ],
+      [
+        "EmployeeLabel",
+        "Label"
+      ],
+      [
+        "RuntimeEmployeePicker",
+        "OptionButton"
+      ],
+      [
+        "RuntimeFireEmployeeButton",
+        "Button"
+      ],
+      [
+        "RuntimeEventPopup",
+        "PanelContainer"
+      ],
+      [
+        "EventPopupMargin",
+        "MarginContainer"
+      ],
+      [
+        "EventPopupRoot",
+        "VBoxContainer"
+      ],
+      [
+        "EventPopupHeader",
+        "HBoxContainer"
+      ],
+      [
+        "EventPopupTitle",
+        "Label"
+      ],
+      [
+        "RuntimeCloseEventPopupButton",
+        "Button"
+      ],
+      [
+        "EventPopupScroll",
+        "ScrollContainer"
+      ],
+      [
+        "RuntimeEventLabel",
+        "Label"
+      ],
+      [
+        "RuntimeEventOptionAButton",
+        "Button"
+      ],
+      [
+        "RuntimeEventOptionBButton",
+        "Button"
+      ],
+      [
+        "RuntimeTriggerEventButton",
+        "Button"
+      ],
+      [
+        "RuntimeReportPopup",
+        "PanelContainer"
+      ],
+      [
+        "ReportPopupMargin",
+        "MarginContainer"
+      ],
+      [
+        "ReportPopupRoot",
+        "VBoxContainer"
+      ],
+      [
+        "ReportPopupHeader",
+        "HBoxContainer"
+      ],
+      [
+        "ReportPopupTitle",
+        "Label"
+      ],
+      [
+        "RuntimeCopyReportButton",
+        "Button"
+      ],
+      [
+        "RuntimeCloseReportPopupButton",
+        "Button"
+      ],
+      [
+        "ReportScroll",
+        "ScrollContainer"
+      ],
+      [
+        "RuntimeReportLabel",
+        "Label"
+      ],
+      [
+        "RuntimeOrdersPopup",
+        "PanelContainer"
+      ],
+      [
+        "OrdersPopupMargin",
+        "MarginContainer"
+      ],
+      [
+        "OrdersPopupRoot",
+        "VBoxContainer"
+      ],
+      [
+        "OrdersPopupHeader",
+        "HBoxContainer"
+      ],
+      [
+        "OrdersPopupTitle",
+        "Label"
+      ],
+      [
+        "RuntimeCloseOrdersPopupButton",
+        "Button"
+      ],
+      [
+        "OrdersPopupScroll",
+        "ScrollContainer"
+      ],
+      [
+        "OrdersPopupContent",
+        "VBoxContainer"
+      ],
+      [
+        "OrderLabel",
+        "Label"
+      ],
+      [
+        "RuntimeOrderProductPicker",
+        "OptionButton"
+      ],
+      [
+        "RuntimeOrderSupplierPicker",
+        "OptionButton"
+      ],
+      [
+        "RuntimeOrderQuantityInput",
+        "LineEdit"
+      ],
+      [
+        "RuntimePlaceOrderButton",
+        "Button"
+      ],
+      [
+        "ShopCatalogLabel",
+        "Label"
+      ],
+      [
+        "RuntimeShopCatalogPicker",
+        "OptionButton"
+      ],
+      [
+        "RuntimeBuyShopCatalogButton",
+        "Button"
+      ],
+      [
+        "ShelfLabel",
+        "Label"
+      ],
+      [
+        "RuntimeShelfPicker",
+        "OptionButton"
+      ],
+      [
+        "RuntimeShelfProductPicker",
+        "OptionButton"
+      ],
+      [
+        "RuntimeAssignShelfButton",
+        "Button"
+      ],
+      [
+        "ShelfRefillRow",
+        "HBoxContainer"
+      ],
+      [
+        "RuntimeShelfRefillInput",
+        "LineEdit"
+      ],
+      [
+        "RuntimeRefillShelfButton",
+        "Button"
+      ],
+      [
+        "RuntimeRefillAllShelvesButton",
+        "Button"
+      ],
+      [
+        "StartupMenu",
+        "PanelContainer"
+      ],
+      [
+        "StartupCenter",
+        "CenterContainer"
+      ],
+      [
+        "StartupCard",
+        "PanelContainer"
+      ],
+      [
+        "StartupMargin",
+        "MarginContainer"
+      ],
+      [
+        "StartupRoot",
+        "VBoxContainer"
+      ],
+      [
+        "StartupTitle",
+        "Label"
+      ],
+      [
+        "StartupSubtitle",
+        "Label"
+      ],
+      [
+        "StartupSpacer",
+        "Control"
+      ],
+      [
+        "StartupNewGameButton",
+        "Button"
+      ],
+      [
+        "StartupLoadFileButton",
+        "Button"
+      ],
+      [
+        "StartupOptionsButton",
+        "Button"
+      ],
+      [
+        "StartupExitButton",
+        "Button"
+      ],
+      [
+        "StartupOptionsPopup",
+        "PanelContainer"
+      ],
+      [
+        "StartupOptionsMargin",
+        "MarginContainer"
+      ],
+      [
+        "StartupOptionsRoot",
+        "VBoxContainer"
+      ],
+      [
+        "StartupOptionsTitle",
+        "Label"
+      ],
+      [
+        "StartupOptionsText",
+        "Label"
+      ],
+      [
+        "StartupTooltipsToggle",
+        "CheckBox"
+      ],
+      [
+        "StartupCloseOptionsButton",
+        "Button"
+      ]
+    ]
+  }
+}

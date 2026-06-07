@@ -65,7 +65,7 @@ namespace Client.Scripts.Visuals.Store
                 }
 
                 actor.Root.Visible = true;
-                actor.NameLabel.Text = employee.Name;
+                actor.NameLabel.Text = ShortenLabel(employee.Name, 14);
                 actor.RoleLabel.Text = RoleToRomanian(role);
                 actor.Role = role;
                 actor.RoleSlot = roleSlot;
@@ -141,14 +141,14 @@ namespace Client.Scripts.Visuals.Store
             var root = new Control
             {
                 Name = key.Replace('|', '_'),
-                Size = new Vector2(92f, 54f),
+                Size = new Vector2(108f, 54f),
                 MouseFilter = Control.MouseFilterEnum.Ignore
             };
 
             var body = new ColorRect
             {
                 Name = "Body",
-                Position = new Vector2(37f, 0f),
+                Position = new Vector2(45f, 0f),
                 Size = new Vector2(18f, 18f),
                 Color = new Color(0.45f, 0.95f, 0.62f, 1f),
                 MouseFilter = Control.MouseFilterEnum.Ignore
@@ -158,8 +158,8 @@ namespace Client.Scripts.Visuals.Store
             {
                 Name = "LabelBackdrop",
                 Position = new Vector2(4f, 20f),
-                Size = new Vector2(84f, 30f),
-                Color = new Color(0.22f, 0.07f, 0.14f, 0.72f),
+                Size = new Vector2(100f, 30f),
+                Color = new Color(0.12f, 0.06f, 0.08f, 0.82f),
                 MouseFilter = Control.MouseFilterEnum.Ignore
             };
 
@@ -167,7 +167,7 @@ namespace Client.Scripts.Visuals.Store
             {
                 Name = "NameLabel",
                 Position = new Vector2(6f, 22f),
-                Size = new Vector2(80f, 12f),
+                Size = new Vector2(96f, 12f),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 ClipText = true,
@@ -179,7 +179,7 @@ namespace Client.Scripts.Visuals.Store
             {
                 Name = "RoleLabel",
                 Position = new Vector2(6f, 34f),
-                Size = new Vector2(80f, 12f),
+                Size = new Vector2(96f, 12f),
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 ClipText = true,
@@ -336,6 +336,18 @@ namespace Client.Scripts.Visuals.Store
                 EmployeeRole.Security => "Pază",
                 _ => "Manager"
             };
+        }
+
+        private static string ShortenLabel(string text, int maxLength)
+        {
+            if (string.IsNullOrWhiteSpace(text))
+                return "-";
+
+            string trimmed = text.Trim();
+            if (trimmed.Length <= maxLength)
+                return trimmed;
+
+            return trimmed[..Math.Max(1, maxLength - 3)] + "...";
         }
 
         private Control EnsureLayer(string name, int zIndex)

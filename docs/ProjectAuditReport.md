@@ -2,81 +2,104 @@
 
 Date: 2026-06-05
 
-## 1. Critical issues found
+## Verification Summary
 
-- The first-run tutorial popup could open immediately after starting a game and grow far beyond the viewport, covering the runtime UI and making normal controls appear broken.
-- Runtime refresh logic hid `_modalRoot` unconditionally when leaving startup mode, which could break popup-driven workflows and modal visibility state.
-- `LoopManager` depended on an editor-assigned `TickManager` reference; fresh scene loads could miss the sibling `TickManager` and skip T=0 baseline capture.
-- `StoreLayoutManager.BuildFallbackPath` could return a direct final target after path discovery failed, allowing a last-resort customer/employee movement segment to cross shelf obstacles.
-- Root solution restore/build is sensitive to MSBuild solution-level parallelism with the Godot SDK project.
+- `dotnet build ChronoIndustrialist.sln`: passed, 0 warnings, 0 errors.
+- `dotnet test ChronoIndustrialist.sln`: passed, 48/48 tests.
+- Static `res://` resource reference scan: passed, no missing direct resource paths found.
+- Static direct UI localization key scan against `client.godot/Localization/ro.csv`: passed, no missing direct `T(...)`/`TF(...)` keys found.
+- Godot editor/headless launch and screenshot validation could not be automated in this shell because no `godot`, `godot4`, or `godot4.6` executable is available on `PATH`.
 
-## 2. Build errors fixed
+## 1. Critical Issues Found
 
-- Added `Directory.Solution.props` to disable parallel solution restore. `dotnet restore ChronoIndustrialist.sln` now succeeds.
-- Verified the full C# solution builds with serialized MSBuild scheduling:
-  - `dotnet build ChronoIndustrialist.sln -m:1`
-  - Result: succeeded, 0 warnings, 0 errors.
+- Obsolete GDScript task checklist assets were still present after the UI moved to the runtime task box. They were unused by the current scene, but they created accidental reactivation risk and stale UI drift.
+- The runtime event popup still exposed a manual event trigger path during normal play. It is now gated behind `EnableLayoutDebug` and ignored unless layout debug is explicitly enabled.
+- Internal runtime event code still used `Placeholder` naming for an intentional debug event path. It has been renamed to `TriggerDebugEvent` to make the production/debug boundary clear.
+- Store furniture code still used placeholder naming for non-shelf purchase visuals. The behavior is preserved, but the implementation now treats them as simple furniture visuals; shelf visuals continue to use original shelf assets.
+- Prior checklist/audit issues in this worktree were verified as addressed: relaxed guided default, empty starting shelves for relaxed mode, price tutorial restoration, popup bounds contracts, stale price target clearing on load, customer focus allocation cleanup, and shelf-obstacle pathing contracts.
 
-Remaining build issue: plain `dotnet build ChronoIndustrialist.sln` still exits nonzero after restore with 0 warnings and 0 errors. Use `dotnet build ChronoIndustrialist.sln -m:1` until the Godot SDK/MSBuild solution scheduling issue is resolved.
+## 2. Build Errors Fixed
 
-## 3. Runtime errors fixed
+- No current C# build errors were found during this pass.
+- The previous stale report warning that plain `dotnet build ChronoIndustrialist.sln` fails is no longer true in this environment.
+- The solution builds successfully with the Godot C# client, simulation core, and test project included.
 
-- `LoopManager` now self-wires `../TickManager` when the exported reference is not assigned and logs a clear error if it still cannot be found.
-- `UIManager.SetStartupMode(false)` now refreshes modal overlay visibility instead of forcibly hiding the modal root during runtime.
-- The oversized automatic first-run tutorial overlay is disabled by default. The tutorial popup body is also bounded inside a scroll container for safer future re-enable work.
-- `StoreLayoutManager.BuildFallbackPath` now returns the safe start point when no unobstructed path can be found.
+## 3. Runtime Errors Fixed
 
-## 4. UI issues fixed
+- Debug-only event triggering is now hidden and disabled unless `EnableLayoutDebug` is true.
+- The debug event handler now exits immediately when debug mode is disabled.
+- Save/load coverage verifies store name, difficulty, cash, reputation, satisfaction, furniture purchases, purchased shelves, hired employees, pending orders, active business phase, and business runtime state.
+- Invalid, missing, and corrupt save behavior is covered so failed loads do not mutate the active game state.
+- Placeholder/runtime naming was cleaned up without changing event behavior.
 
-- Removed the blocking runtime first-run tutorial overlay from the default new-game path.
-- Preserved modal-root state for runtime popups instead of hiding it during every runtime refresh.
-- Verified startup-to-new-game runtime UI at:
-  - 1280x720
-  - 1600x900
-  - 1920x1080
-- Smoke validation confirmed `TopMenu`, `LeftMenu`, and `MainGameArea` are visible and do not overlap after starting a game.
+## 4. UI Issues Fixed
 
-## 5. Store visualization issues fixed
+- Removed obsolete task checklist scenes/scripts from the repository so the active UI has one task-progress source.
+- Regression coverage now asserts the runtime task box is used and old checklist assets stay removed.
+- The runtime test-event button is still present in the scene for debug use, but normal UI refresh hides and disables it unless layout debug is enabled.
+- Existing UI cleanup remains verified by tests: compact popup sizes, no scene-level `clip_text = true`, reduced startup/new-game font overrides, bounded popup fitting, startup/new-game Romanian flow, and menu progress indicators.
+- Automated viewport screenshots at 1280x720, 1600x900, and 1920x1080 remain blocked until Godot is available in the environment.
 
-- Customers and employees no longer receive a fallback direct path through shelf obstacles when pathfinding fails.
-- Existing shelf visualization continues to duplicate original shelf scene controls through `CreateShelfVisualFromOriginal`.
-- No generated shelf placeholder references were found in runtime store visualization code.
-- Existing regression coverage verifies purchased shelf creation, original shelf visual reuse, employee name/role labels, furniture save/load, and customer/employee pathing contracts.
+## 5. Store Visualization Issues Fixed
 
-## 6. Files modified
+- Original shelf visuals remain in use through `CreateShelfVisualFromOriginal` and template duplication.
+- No generated shelf placeholder references remain in runtime store visualization code.
+- Purchased shelf catalog items create simulation shelves with the expected product, capacity, stock, and display type.
+- Customer and employee movement contracts still route through `BuildPath(...)` and avoid direct final-target snapping.
+- Store layout tests verify solid shelf obstacle contracts, dynamic shelf slot usage, customer browse/queue/register points, and employee name/role labels.
+- Non-shelf purchases render through simple furniture visuals. Final art for those upgrades remains technical debt, not a blocking shelf-visualization issue.
 
-- `Directory.Solution.props`
-- `client.godot/Loop/LoopManager.cs`
-- `client.godot/Visuals/UIManager.cs`
-- `client.godot/Visuals/Store/StoreLayoutManager.cs`
+## 6. Files Modified
+
+- `Core.Simulation.Tests/Program.cs`
 - `Core.Simulation.Tests/RegressionCoverageTests.cs`
+- `Core.Simulation/Data/GameData.cs`
+- `Core.Simulation/Logic/EventManager.cs`
+- `Core.Simulation/Logic/GameManager.cs`
+- `Core.Simulation/Logic/SimulationLoop.cs`
+- `E2E_FIRST_RUN_CHECKLIST.md`
+- `E2E_PLAYER_EXPERIENCE_AUDIT.md`
+- `FLOW_AND_OPTIMIZATION_CHECKLIST.md`
+- `GAMEPLAY_ONBOARDING.md`
+- `OPTIMIZATION_AND_FLOW_AUDIT.md`
+- `PLAYER_EXPERIENCE_AUDIT.md`
+- `UI_CLEANUP_CHECKLIST.md`
+- `UI_FLOW_CHECKLIST.md`
+- `client.godot/Scenes/NewGameSetupPanel.tscn`
+- `client.godot/Scenes/UIRoot.tscn`
+- `client.godot/Visuals/Store/CustomerVisualController.cs`
+- `client.godot/Visuals/Store/StoreFurnitureVisualController.cs`
+- `client.godot/Visuals/UIManager.cs`
 - `docs/ProjectAuditReport.md`
 
-## 7. Files removed
+## 7. Files Removed
 
-- None from the repository by this audit pass.
+- `client.godot/Assets/UI/components/TaskChecklist.tscn`
+- `client.godot/Assets/UI/components/TaskChecklistItem.tscn`
+- `client.godot/Assets/UI/scripts/task_checklist.gd`
+- `client.godot/Assets/UI/scripts/task_checklist.gd.uid`
+- `client.godot/Assets/UI/scripts/task_checklist_item.gd`
+- `client.godot/Assets/UI/scripts/task_checklist_item.gd.uid`
 
-Note: the worktree already contained deleted UI assets and unrelated edits before this pass. Those were not reverted.
+## 8. Remaining Warnings
 
-## 8. Remaining warnings
+- Godot is not available on `PATH`, so actual project launch, main-scene load, resource load through the engine, and viewport screenshot checks could not be executed here.
+- UI overlap status is covered by scene/static contracts and regression tests, but not by fresh screenshot comparison in this pass.
+- Full interactive customer/employee movement was not observed in the editor during this pass because the Godot runtime could not be launched.
+- The worktree contains pre-existing untracked files: `KNOWN_ISSUES.md`, `RELEASE_CHECKLIST.md`, and `doc_metadata.json`.
 
-- Plain `dotnet build ChronoIndustrialist.sln` still fails silently; serialized `-m:1` build succeeds.
-- UI validation was performed through Godot headless scene execution, not GUI screenshot comparison.
-- Full interactive customer purchase loops were not observed manually in the editor during this pass.
-- The automatic tutorial remains disabled until it receives dedicated visual QA.
+## 9. Remaining Technical Debt
 
-## 9. Remaining technical debt
+- Add Godot 4.6.x headless/editor availability to local scripts or CI so launch and screenshot smoke tests can run consistently.
+- Replace simple non-shelf furniture visuals with final art assets when those assets exist.
+- Add an engine-level smoke test that starts a relaxed game, stocks a shelf, sets a price, opens the shop, advances ticks, saves, loads, and asserts no runtime errors.
+- Add screenshot regression checks for 1280x720, 1600x900, and 1920x1080.
+- Split the current dirty worktree into reviewable changes before release hardening.
 
-- The first-run tutorial needs to be redesigned as a non-blocking or carefully bounded flow before re-enabling.
-- `TriggerPlaceholderEvent` and the visible test-event workflow remain active and should be reviewed before MVP.
-- Store furniture non-shelf upgrades still use simple placeholder visuals.
-- Store layout still relies on runtime scaling for fixed-position shop children.
-- The pre-existing dirty worktree should be split into reviewable changes before release hardening.
+## 10. Recommendations For MVP Completion
 
-## 10. Recommendations for MVP completion
-
-- Document `dotnet build ChronoIndustrialist.sln -m:1` as the reliable local/CI solution build command, or split client and simulation builds into separate CI steps.
-- Add a committed Godot smoke test that starts a game, opens the shop, advances business ticks, saves, loads, and asserts no runtime errors.
-- Add GUI screenshot regression checks for 1280x720, 1600x900, and 1920x1080.
-- Re-enable the tutorial only after it passes viewport-bounds checks in all target resolutions.
-- Add direct tests for maximum purchased shelf count and dynamic shelf slot visibility.
+- Treat `dotnet build ChronoIndustrialist.sln` and `dotnet test ChronoIndustrialist.sln` as required gates.
+- Add a Godot launch gate once the executable is installed: project load, `Scenes/GameMain.tscn` load, first-run startup, new-game start, save, load, and business tick smoke.
+- Keep debug-only flows behind explicit exported debug flags.
+- Keep shelf collision and purchased-shelf visual contracts under regression coverage as store layout expands.
+- Prioritize final non-shelf store assets only after the current compile, save/load, tutorial, and shop loop remain stable under automated smoke checks.

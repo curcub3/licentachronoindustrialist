@@ -717,12 +717,12 @@ namespace Core.Simulation.Logic
             return desiredCount;
         }
 
-        public bool TriggerPlaceholderEvent()
+        public bool TriggerDebugEvent()
         {
             if (CurrentPhase != DayPhase.Management)
                 return false;
 
-            return Events.TriggerPlaceholderEvent(this);
+            return Events.TriggerDebugEvent(this);
         }
 
         public BusinessRuntimeSaveData CaptureBusinessRuntime()
@@ -827,7 +827,7 @@ namespace Core.Simulation.Logic
         public void RestoreStartSettings(string? storeName, GameDifficulty? difficulty, int? runDurationDays)
         {
             StoreName = string.IsNullOrWhiteSpace(storeName) ? GameStartSettings.Default.StoreName : storeName.Trim();
-            Difficulty = difficulty ?? GameDifficulty.Normal;
+            Difficulty = difficulty ?? GameStartSettings.Default.Difficulty;
             LoopDayLimit = NormalizeCampaignDuration(runDurationDays ?? GameStartSettings.Default.RunDurationDays);
         }
 

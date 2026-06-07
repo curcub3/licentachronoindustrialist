@@ -1,28 +1,32 @@
 # Optimization and Flow Audit
 
+Last updated: 2026-06-05
+
+Implementation status: applied. The audit’s minimal fixes are now covered by code changes and regression tests: throttled UI refreshes, heavy/light refresh split, cached layout/obstacle state, path invalidation hooks, price target cleanup, slot-based load cleanup, and reduced per-frame customer visual allocations.
+
 ## Current Performance Risks
-- `TickManager._Process` can call `UIManager.Refresh()` once per rendered frame during the business phase. That refresh repopulates product/shelf/staff pickers, rebuilds checklist UI, refreshes shop labels, and refreshes furniture/customer/employee visual controllers.
-- `StoreLayoutManager.BuildPath()` calls `RefreshLayout()` and rebuilds obstacle lists on each path request. Customer and employee controllers only request new paths on target changes, but layout/obstacle work is still repeated for multiple actors.
-- Customer queue indexing uses LINQ sorting per active actor update. With the current small actor cap this is acceptable, but it is avoidable per-frame allocation/work.
-- Employee sales-associate targeting calls `GetCustomerFocusPoints()`, which allocates a list every frame when that role is visible.
+- `TickManager._Process` throttles full business UI refreshes and uses a cheap HUD/progress refresh between full passes.
+- `StoreLayoutManager` caches layout, obstacle signatures, and static navigation anchors; furniture/load changes invalidate paths once.
+- Customer queue indexing no longer sorts active actors per update.
+- Employee sales-associate targeting reuses a customer focus list instead of allocating a new list each frame.
 - Inventory totals and shelf summaries use repeated LINQ scans. This is low risk at current data sizes, but it should stay out of per-frame refresh paths.
 
 ## Confusing Flow Points
 - Price editing needs one explicit product target. Existing code now tracks `_activePriceProductId`; the target must be cleared whenever the price popup closes or loading resets UI state.
 - Save/load should stay slot-based. The current flow opens save slots instead of a generic file picker, but load should also close all open runtime menus and reset stale selected targets.
-- New game tutorial and onboarding are visible, but the early sequence should keep the next concrete action visible: stock shelf, set price, open store, observe customer.
+- New game tutorial and onboarding are visible, and the early sequence keeps the next concrete action visible: stock shelf, set price, open store, observe customer.
 - Furniture purchase happens directly from the catalog rather than through a separate placement preview. Minimal safe fix is to make the purchased item visible immediately and force path/layout refresh once.
 
 ## Visual Clutter and Readability Issues
-- HUD text is dense and can clip on smaller widths. Keep it short and update only when values change.
+- HUD text is compact, wrapping is enabled, and scene-level clipping is disabled on key labels.
 - Shop labels contain several lines of state. They are useful, but should be refreshed only when state changes or on a light throttle.
 - Menus use established theme resources and should keep the same controls/colors. No new visual scheme is needed.
 - Feedback should stay short and Romanian; price/shelf/furniture actions already notify, but stale modal state must not linger.
 
 ## Expensive Update Loops
-- `UIManager.RefreshRuntimePanel()` repopulates all option lists and rewrites many labels every refresh.
-- `UIManager.RefreshShop2DView()` refreshes furniture and visual controllers every refresh even when no layout, stock, employee, or phase state changed.
-- `StoreLayoutManager.RefreshLayout()` runs from multiple public methods that are called by visual controllers.
+- `UIManager.RefreshRuntimePanel()` uses full-refresh signatures so option lists and shop visuals are not rebuilt every light business update.
+- `UIManager.RefreshShop2DView()` runs only during full refreshes.
+- `StoreLayoutManager.RefreshLayout()` exits early when the shop size has not changed.
 
 ## Repeated Signal/Event Connections
 - `UIManager.WireRuntimeActions()` is protected by `_runtimeActionsWired`; this prevents most duplicate button/signal handlers.
@@ -52,3 +56,13 @@
 - Clear price target in all stale-menu paths: close price popup, hide all popups, load game, reset/main menu.
 - Remove noisy production `GD.Print` calls from common button handlers.
 - Add regression checks for throttled refresh support, price target clearing, path invalidation, and slot-based load flow.
+
+## Changes Applied
+
+1. Price confirm closes the price popup and clears the active target after applying one product update.
+2. Customer focus points are stored in a reusable list.
+3. Queue index calculation now uses a direct sequence comparison loop instead of per-update LINQ sorting.
+4. Regression coverage now guards the focus-list reuse and queue-index allocation fix.
+5. Existing refresh throttling, path invalidation, and slot-load cleanup checks remain green.
+
+Verification: `dotnet test ChronoIndustrialist.sln` passes with 48 tests.

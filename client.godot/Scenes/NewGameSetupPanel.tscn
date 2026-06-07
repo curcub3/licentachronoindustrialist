@@ -78,12 +78,12 @@ theme_override_constants/separation = 20
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Înapoi"
 
 [node name="NewGameStartButton" type="Button" parent="SetupCenter/SetupCard/SetupMargin/SetupRoot/SetupButtons"]
 custom_minimum_size = Vector2(0, 42)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Confirmă"

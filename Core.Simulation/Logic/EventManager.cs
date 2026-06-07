@@ -64,7 +64,7 @@ namespace Core.Simulation.Logic
             }
         }
 
-        public bool TriggerPlaceholderEvent(GameManager game)
+        public bool TriggerDebugEvent(GameManager game)
         {
             if (_activeEvent != null && _pendingDecision != null)
                 return false;

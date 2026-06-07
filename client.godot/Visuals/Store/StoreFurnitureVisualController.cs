@@ -48,7 +48,7 @@ namespace Client.Scripts.Visuals.Store
                 {
                     visual = descriptor.Kind == FurnitureKind.Shelf
                         ? CreateShelfVisual(key, descriptor.ShelfVariant ?? ShelfDisplayType.Basic)
-                        : CreatePlaceholderVisual(key);
+                        : CreateSimpleFurnitureVisual(key);
                     _visuals[key] = visual;
                 }
 
@@ -62,6 +62,9 @@ namespace Client.Scripts.Visuals.Store
                     visual.Background.Size = descriptor.Rect.Size;
                     visual.Background.Color = descriptor.Color;
                 }
+
+                if (visual.Panel != null && descriptor.Kind != FurnitureKind.Shelf)
+                    visual.Panel.AddThemeStyleboxOverride("panel", CreateTemporaryFurnitureStyle(descriptor.Color));
 
                 if (visual.Label != null)
                 {
@@ -97,36 +100,36 @@ namespace Client.Scripts.Visuals.Store
                 {
                     case 4:
                         descriptors[$"storage-{storageSlot}"] = new FurnitureDescriptor(
-                            FurnitureKind.Placeholder,
+                            FurnitureKind.Simple,
                             _layout.GetStorageFurnitureSlot(storageSlot),
-                            "Depozit",
+                            "Depozit\nvizual temporar",
                             new Color(0.78f, 0.28f, 0.29f, 0.95f),
                             null);
                         storageSlot++;
                         break;
                     case 5:
                         descriptors[$"decor-{decorationSlot}"] = new FurnitureDescriptor(
-                            FurnitureKind.Placeholder,
+                            FurnitureKind.Simple,
                             _layout.GetDecorationFurnitureSlot(decorationSlot),
-                            "Neon",
+                            "Neon\nvizual temporar",
                             new Color(0.86f, 0.52f, 0.48f, 0.95f),
                             null);
                         decorationSlot++;
                         break;
                     case 6:
                         descriptors[$"scanner-{scannerSlot}"] = new FurnitureDescriptor(
-                            FurnitureKind.Placeholder,
+                            FurnitureKind.Simple,
                             _layout.GetHardwareFurnitureSlot(catalogItemId, scannerSlot),
-                            "Scanner",
+                            "Scanner\nvizual temporar",
                             new Color(0.92f, 0.58f, 0.5f, 0.95f),
                             null);
                         scannerSlot++;
                         break;
                     case 7:
                         descriptors[$"cart-{cartSlot}"] = new FurnitureDescriptor(
-                            FurnitureKind.Placeholder,
+                            FurnitureKind.Simple,
                             _layout.GetHardwareFurnitureSlot(catalogItemId, cartSlot),
-                            "Cărucior",
+                            "Cărucior\nvizual temporar",
                             new Color(0.82f, 0.3f, 0.29f, 0.95f),
                             null);
                         cartSlot++;
@@ -139,7 +142,11 @@ namespace Client.Scripts.Visuals.Store
 
         private FurnitureVisual CreateShelfVisual(string key, ShelfDisplayType displayType)
         {
-            Control shelfRoot = _layout.CreateShelfVisualFromOriginal(displayType) ?? new Control();
+            Control? originalShelf = _layout.CreateShelfVisualFromOriginal(displayType);
+            if (originalShelf == null)
+                return CreateMissingAssetVisual(key, $"ASSET LIPSĂ: raft {displayType}");
+
+            Control shelfRoot = originalShelf;
             shelfRoot.Name = key;
             shelfRoot.MouseFilter = Control.MouseFilterEnum.Ignore;
 
@@ -151,37 +158,66 @@ namespace Client.Scripts.Visuals.Store
             }
 
             _layer.AddChild(shelfRoot);
-            return new FurnitureVisual(shelfRoot, null, label);
+            return new FurnitureVisual(shelfRoot, null, null, label);
         }
 
-        private FurnitureVisual CreatePlaceholderVisual(string key)
+        private FurnitureVisual CreateSimpleFurnitureVisual(string key)
         {
-            var root = new Control
+            var root = new PanelContainer
             {
                 Name = key,
-                MouseFilter = Control.MouseFilterEnum.Ignore
-            };
-
-            var background = new ColorRect
-            {
-                Name = "Background",
                 MouseFilter = Control.MouseFilterEnum.Ignore
             };
 
             var label = new Label
             {
                 Name = "Label",
+                LayoutMode = 2,
                 HorizontalAlignment = HorizontalAlignment.Center,
                 VerticalAlignment = VerticalAlignment.Center,
                 AutowrapMode = TextServer.AutowrapMode.WordSmart,
+                ClipText = true,
                 MouseFilter = Control.MouseFilterEnum.Ignore
             };
             label.AddThemeFontSizeOverride("font_size", 10);
 
-            root.AddChild(background);
             root.AddChild(label);
             _layer.AddChild(root);
-            return new FurnitureVisual(root, background, label);
+            return new FurnitureVisual(root, root, null, label);
+        }
+
+        private FurnitureVisual CreateMissingAssetVisual(string key, string labelText)
+        {
+            var visual = CreateSimpleFurnitureVisual(key);
+            if (visual.Label != null)
+                visual.Label.Text = labelText;
+            visual.Panel?.AddThemeStyleboxOverride("panel", CreateWarningMissingAssetStyle());
+            return visual;
+        }
+
+        private static StyleBoxFlat CreateTemporaryFurnitureStyle(Color background)
+        {
+            var style = new StyleBoxFlat
+            {
+                BgColor = new Color(background.R * 0.62f, background.G * 0.62f, background.B * 0.62f, 0.92f),
+                BorderColor = new Color(0.96f, 0.86f, 0.72f, 1f),
+                BorderWidthLeft = 2,
+                BorderWidthTop = 2,
+                BorderWidthRight = 2,
+                BorderWidthBottom = 2,
+                CornerRadiusTopLeft = 2,
+                CornerRadiusTopRight = 2,
+                CornerRadiusBottomRight = 2,
+                CornerRadiusBottomLeft = 2
+            };
+            return style;
+        }
+
+        private static StyleBoxFlat CreateWarningMissingAssetStyle()
+        {
+            var style = CreateTemporaryFurnitureStyle(new Color(0.52f, 0.08f, 0.08f, 1f));
+            style.BorderColor = new Color(1f, 0.82f, 0.24f, 1f);
+            return style;
         }
 
         private static Label? FindFirstLabel(Node node)
@@ -228,7 +264,7 @@ namespace Client.Scripts.Visuals.Store
         private enum FurnitureKind
         {
             Shelf,
-            Placeholder
+            Simple
         }
 
         private sealed record FurnitureDescriptor(
@@ -241,13 +277,20 @@ namespace Client.Scripts.Visuals.Store
         private sealed class FurnitureVisual
         {
             public FurnitureVisual(Control root, ColorRect? background, Label? label)
+                : this(root, null, background, label)
+            {
+            }
+
+            public FurnitureVisual(Control root, PanelContainer? panel, ColorRect? background, Label? label)
             {
                 Root = root;
+                Panel = panel;
                 Background = background;
                 Label = label;
             }
 
             public Control Root { get; }
+            public PanelContainer? Panel { get; }
             public ColorRect? Background { get; }
             public Label? Label { get; }
         }

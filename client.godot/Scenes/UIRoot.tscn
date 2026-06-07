@@ -3,6 +3,7 @@
 [ext_resource type="Script" uid="uid://c7kxxui87q84e" path="res://Visuals/UIManager.cs" id="1"]
 [ext_resource type="PackedScene" path="res://Scenes/NewGameSetupPanel.tscn" id="10"]
 [ext_resource type="Theme" uid="uid://dkci32srtbdk6" path="res://Themes/ChronoTheme.tres" id="11"]
+[ext_resource type="PackedScene" path="res://Scenes/UI/StoreHUD.tscn" id="12"]
 
 [node name="UIRoot" type="Control" unique_id=400006292]
 layout_mode = 3
@@ -14,7 +15,16 @@ grow_vertical = 2
 theme = ExtResource("11")
 script = ExtResource("1")
 
-[node name="GameplayRoot" type="MarginContainer" parent="." unique_id=324419279]
+[node name="StoreHUD" parent="." instance=ExtResource("12")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+z_index = 50
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=324419279]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -26,266 +36,268 @@ theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="AppVBox" type="VBoxContainer" parent="GameplayRoot" unique_id=75456960]
+[node name="RootLayout" type="VBoxContainer" parent="MarginContainer" unique_id=75456960]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="TopMenu" type="PanelContainer" parent="GameplayRoot/AppVBox" unique_id=1705536631]
-custom_minimum_size = Vector2(0, 78)
+[node name="TopMenu" type="PanelContainer" parent="MarginContainer/RootLayout" unique_id=1705536631]
+visible = false
+custom_minimum_size = Vector2(0, 64)
 layout_direction = 1
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TopMargin" type="MarginContainer" parent="GameplayRoot/AppVBox/TopMenu" unique_id=1460667647]
+[node name="TopMargin" type="MarginContainer" parent="MarginContainer/RootLayout/TopMenu" unique_id=1460667647]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 6
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 6
 
-[node name="TopRow" type="HBoxContainer" parent="GameplayRoot/AppVBox/TopMenu/TopMargin" unique_id=1458790568]
+[node name="TopRow" type="HBoxContainer" parent="MarginContainer/RootLayout/TopMenu/TopMargin" unique_id=1458790568]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="RuntimeHudLabel" type="Label" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=95899485]
+[node name="RuntimeHudLabel" type="Label" parent="MarginContainer/RootLayout/TopMenu/TopMargin/TopRow" unique_id=95899485]
 custom_minimum_size = Vector2(360, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Zi 1/14 | Administrare | Numerar 1500.00 lei | Profit sesiune 0.00 lei | Reputație 50"
 vertical_alignment = 1
 autowrap_mode = 2
-clip_text = true
+clip_text = false
 
-[node name="RuntimeOpenShopButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=1942284629]
+[node name="RuntimeOpenShopButton" type="Button" parent="MarginContainer/RootLayout/TopMenu/TopMargin/TopRow" unique_id=1942284629]
 custom_minimum_size = Vector2(92, 40)
 layout_mode = 2
 text = "Deschide"
 
-[node name="RuntimeNextDayButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=1362347357]
+[node name="RuntimeNextDayButton" type="Button" parent="MarginContainer/RootLayout/TopMenu/TopMargin/TopRow" unique_id=1362347357]
 custom_minimum_size = Vector2(86, 40)
 layout_mode = 2
 text = "Ziua urm."
 
-[node name="RuntimePauseSpeedButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=988747248]
+[node name="RuntimePauseSpeedButton" type="Button" parent="MarginContainer/RootLayout/TopMenu/TopMargin/TopRow" unique_id=988747248]
 custom_minimum_size = Vector2(56, 40)
 layout_mode = 2
 text = "Pauză"
 
-[node name="RuntimeNormalSpeedButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=1032164449]
+[node name="RuntimeNormalSpeedButton" type="Button" parent="MarginContainer/RootLayout/TopMenu/TopMargin/TopRow" unique_id=1032164449]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 text = "1x"
 
-[node name="RuntimeFastSpeedButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=624554906]
+[node name="RuntimeFastSpeedButton" type="Button" parent="MarginContainer/RootLayout/TopMenu/TopMargin/TopRow" unique_id=624554906]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 text = "2x"
 
-[node name="RuntimeFasterSpeedButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=199941237]
+[node name="RuntimeFasterSpeedButton" type="Button" parent="MarginContainer/RootLayout/TopMenu/TopMargin/TopRow" unique_id=199941237]
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 text = "4x"
 
-[node name="RuntimeSaveButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=1021845460]
+[node name="RuntimeSaveButton" type="Button" parent="MarginContainer/RootLayout/TopMenu/TopMargin/TopRow" unique_id=1021845460]
 custom_minimum_size = Vector2(54, 40)
 layout_mode = 2
 text = "Salv."
 
-[node name="RuntimeLoadButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=564952856]
+[node name="RuntimeLoadButton" type="Button" parent="MarginContainer/RootLayout/TopMenu/TopMargin/TopRow" unique_id=564952856]
 custom_minimum_size = Vector2(72, 40)
 layout_mode = 2
 text = "Încarcă"
 
-[node name="RuntimeResetButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=541377233]
+[node name="RuntimeResetButton" type="Button" parent="MarginContainer/RootLayout/TopMenu/TopMargin/TopRow" unique_id=541377233]
 custom_minimum_size = Vector2(58, 40)
 layout_mode = 2
 text = "Reset"
 
-[node name="RuntimeMainMenuButton" type="Button" parent="GameplayRoot/AppVBox/TopMenu/TopMargin/TopRow" unique_id=601555053]
+[node name="RuntimeMainMenuButton" type="Button" parent="MarginContainer/RootLayout/TopMenu/TopMargin/TopRow" unique_id=601555053]
 custom_minimum_size = Vector2(58, 40)
 layout_mode = 2
 text = "Meniu"
 
-[node name="BodyHBox" type="HBoxContainer" parent="GameplayRoot/AppVBox" unique_id=780832984]
+[node name="BodyLayout" type="HBoxContainer" parent="MarginContainer/RootLayout" unique_id=780832984]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="LeftMenu" type="PanelContainer" parent="GameplayRoot/AppVBox/BodyHBox" unique_id=1670133066]
-custom_minimum_size = Vector2(286, 100)
+[node name="LeftMenu" type="PanelContainer" parent="MarginContainer/RootLayout/BodyLayout" unique_id=1670133066]
+visible = false
+custom_minimum_size = Vector2(260, 100)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 3
 size_flags_stretch_ratio = 0.0
 
-[node name="MarginContainer" type="MarginContainer" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu" unique_id=1467491007]
+[node name="MarginContainer" type="MarginContainer" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu" unique_id=1467491007]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="LeftMenuScroll" type="ScrollContainer" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer" unique_id=570886691]
+[node name="LeftMenuScroll" type="ScrollContainer" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer" unique_id=570886691]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="Root" type="VBoxContainer" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll" unique_id=444096282]
+[node name="Root" type="VBoxContainer" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll" unique_id=444096282]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="PanelTitle" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=952067030]
+[node name="PanelTitle" type="Label" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=952067030]
 layout_mode = 2
 text = "Administrare"
 
-[node name="RuntimeNotificationLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=1985525910]
+[node name="RuntimeNotificationLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=1985525910]
 visible = false
 layout_mode = 2
-clip_text = true
+clip_text = false
 
-[node name="RuntimeHintLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=530430259]
+[node name="RuntimeHintLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=530430259]
 visible = false
 layout_mode = 2
 autowrap_mode = 2
-clip_text = true
+clip_text = false
 
-[node name="RuntimeTaskBoxLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=406904592]
+[node name="RuntimeTaskBoxLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=406904592]
 visible = false
 custom_minimum_size = Vector2(0, 86)
 layout_mode = 2
 autowrap_mode = 2
 
-[node name="RuntimeBusinessProgressBar" type="ProgressBar" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=365707376]
+[node name="RuntimeBusinessProgressBar" type="ProgressBar" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=365707376]
 visible = false
 layout_mode = 2
 step = 1.0
 show_percentage = false
 
-[node name="RuntimeTabs" type="VBoxContainer" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=2097725158]
+[node name="RuntimeTabs" type="VBoxContainer" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=2097725158]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="OperationsTitle" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=1386411474]
+[node name="OperationsTitle" type="Label" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=1386411474]
 visible = false
 layout_mode = 2
 
-[node name="OperationsButtons" type="VBoxContainer" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=1890157423]
+[node name="OperationsButtons" type="VBoxContainer" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=1890157423]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="RuntimeManageTabButton" type="Button" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/OperationsButtons" unique_id=1673086872]
+[node name="RuntimeManageTabButton" type="Button" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/OperationsButtons" unique_id=1673086872]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Prețuri"
 
-[node name="RuntimeStockTabButton" type="Button" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/OperationsButtons" unique_id=856710605]
+[node name="RuntimeStockTabButton" type="Button" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/OperationsButtons" unique_id=856710605]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Comenzi"
 
-[node name="RuntimeStaffTabButton" type="Button" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/OperationsButtons" unique_id=1604337287]
+[node name="RuntimeStaffTabButton" type="Button" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/OperationsButtons" unique_id=1604337287]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Personal"
 
-[node name="AnalysisTitle" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=1407972390]
+[node name="AnalysisTitle" type="Label" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=1407972390]
 visible = false
 layout_mode = 2
 
-[node name="AnalysisButtons" type="VBoxContainer" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=1092066177]
+[node name="AnalysisButtons" type="VBoxContainer" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=1092066177]
 layout_mode = 2
 theme_override_constants/separation = 12
 
-[node name="RuntimeEventTabButton" type="Button" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/AnalysisButtons" unique_id=2088862713]
+[node name="RuntimeEventTabButton" type="Button" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/AnalysisButtons" unique_id=2088862713]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Eveniment"
 
-[node name="RuntimeReportTabButton" type="Button" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/AnalysisButtons" unique_id=1021566883]
+[node name="RuntimeReportTabButton" type="Button" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/AnalysisButtons" unique_id=1021566883]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Raport"
 
-[node name="RuntimeStatsTabButton" type="Button" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/AnalysisButtons" unique_id=1352003891]
+[node name="RuntimeStatsTabButton" type="Button" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs/AnalysisButtons" unique_id=1352003891]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "Statistici"
 
-[node name="AlertsTitle" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=1948920975]
+[node name="AlertsTitle" type="Label" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=1948920975]
 visible = false
 layout_mode = 2
 
-[node name="RuntimeAlertSummaryLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=66507397]
+[node name="RuntimeAlertSummaryLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeTabs" unique_id=66507397]
 visible = false
 layout_mode = 2
 autowrap_mode = 2
 
-[node name="RuntimePriceSection" type="VBoxContainer" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=546108663]
+[node name="RuntimePriceSection" type="VBoxContainer" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=546108663]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="RuntimeOpenPricesPopupButton" type="Button" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimePriceSection" unique_id=1657891400]
+[node name="RuntimeOpenPricesPopupButton" type="Button" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimePriceSection" unique_id=1657891400]
 layout_mode = 2
 text = "Meniu Prețuri"
 
-[node name="RuntimeStockSection" type="VBoxContainer" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=326496618]
+[node name="RuntimeStockSection" type="VBoxContainer" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=326496618]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="RuntimeOpenOrdersPopupButton" type="Button" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeStockSection" unique_id=770810465]
+[node name="RuntimeOpenOrdersPopupButton" type="Button" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeStockSection" unique_id=770810465]
 layout_mode = 2
 text = "Meniu Comenzi"
 
-[node name="RuntimeShelfSummaryLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeStockSection" unique_id=1099452648]
+[node name="RuntimeShelfSummaryLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeStockSection" unique_id=1099452648]
 layout_mode = 2
 text = "Stare rafturi"
 autowrap_mode = 2
 
-[node name="RuntimeStaffSection" type="VBoxContainer" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=942109612]
+[node name="RuntimeStaffSection" type="VBoxContainer" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=942109612]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="RuntimeOpenStaffPopupButton" type="Button" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeStaffSection" unique_id=476438528]
+[node name="RuntimeOpenStaffPopupButton" type="Button" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeStaffSection" unique_id=476438528]
 layout_mode = 2
 text = "Meniu Personal"
 
-[node name="RuntimeEventSection" type="VBoxContainer" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=86363817]
+[node name="RuntimeEventSection" type="VBoxContainer" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=86363817]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="RuntimeOpenEventPopupButton" type="Button" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeEventSection" unique_id=302632791]
+[node name="RuntimeOpenEventPopupButton" type="Button" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeEventSection" unique_id=302632791]
 layout_mode = 2
 text = "Meniu Evenimente"
 
-[node name="RuntimeReportSection" type="VBoxContainer" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=2032940165]
+[node name="RuntimeReportSection" type="VBoxContainer" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root" unique_id=2032940165]
 visible = false
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="RuntimeOpenReportPopupButton" type="Button" parent="GameplayRoot/AppVBox/BodyHBox/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeReportSection" unique_id=1373492173]
+[node name="RuntimeOpenReportPopupButton" type="Button" parent="MarginContainer/RootLayout/BodyLayout/LeftMenu/MarginContainer/LeftMenuScroll/Root/RuntimeReportSection" unique_id=1373492173]
 layout_mode = 2
 text = "Meniu Raport"
 
-[node name="MainGameArea" type="HBoxContainer" parent="GameplayRoot/AppVBox/BodyHBox" unique_id=1717307707]
+[node name="MainGameArea" type="HBoxContainer" parent="MarginContainer/RootLayout/BodyLayout" unique_id=1717307707]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 12
 
-[node name="Shop2DView" type="Control" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea" unique_id=364785015]
+[node name="Shop2DView" type="Control" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea" unique_id=364785015]
 clip_contents = true
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="ShopBackdrop" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=9170497]
+[node name="ShopBackdrop" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=9170497]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -295,21 +307,21 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.33, 0.1, 0.18, 1)
 
-[node name="ShopFloor" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=372075617]
+[node name="ShopFloor" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=372075617]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 4.0
-offset_top = 6.0
-offset_right = -27.46582
-offset_bottom = 18.767822
+offset_left = 8.0
+offset_top = 8.0
+offset_right = -8.0
+offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.42, 0.14, 0.22, 1)
 
-[node name="AisleHorizontal2D" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=623563193]
+[node name="AisleHorizontal2D" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=623563193]
 layout_mode = 0
 offset_left = 56.0
 offset_top = 315.0
@@ -319,7 +331,7 @@ scale = Vector2(1.0401299, 0.99231946)
 mouse_filter = 2
 color = Color(0.56, 0.17, 0.23, 1)
 
-[node name="AisleVertical2D" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=59516573]
+[node name="AisleVertical2D" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=59516573]
 layout_mode = 0
 offset_left = 468.0
 offset_top = 133.0
@@ -329,7 +341,7 @@ scale = Vector2(1.0401299, 0.99231946)
 mouse_filter = 2
 color = Color(0.56, 0.17, 0.23, 1)
 
-[node name="Shop2DStatusLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=444841691]
+[node name="Shop2DStatusLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=444841691]
 visible = false
 layout_mode = 0
 offset_left = 34.0
@@ -337,7 +349,7 @@ offset_top = 14.0
 offset_right = 800.0
 offset_bottom = 40.0
 
-[node name="EntranceZone2D" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=1928368480]
+[node name="EntranceZone2D" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=1928368480]
 layout_mode = 0
 offset_left = 350.0
 offset_top = 543.0
@@ -347,15 +359,18 @@ scale = Vector2(1.0401299, 0.99231946)
 mouse_filter = 2
 color = Color(0.48, 0.15, 0.22, 1)
 
-[node name="EntranceLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/EntranceZone2D" unique_id=1629947538]
+[node name="EntranceLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/EntranceZone2D" unique_id=1629947538]
 layout_mode = 0
 offset_left = 58.0
 offset_top = 20.0
 offset_right = 154.0
 offset_bottom = 46.0
 text = "Intrare"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
 
-[node name="ShelfCartridgeZone2D" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=1829593636]
+[node name="ShelfCartridgeZone2D" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=1829593636]
 layout_mode = 0
 offset_left = 58.999996
 offset_top = 200.0
@@ -364,7 +379,7 @@ offset_bottom = 316.0
 scale = Vector2(1.0401299, 0.99231946)
 color = Color(0.48, 0.15, 0.22, 1)
 
-[node name="CartridgeIcon" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/ShelfCartridgeZone2D" unique_id=1140058450]
+[node name="CartridgeIcon" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/ShelfCartridgeZone2D" unique_id=1140058450]
 layout_mode = 0
 offset_left = 10.0
 offset_top = 12.0
@@ -373,7 +388,7 @@ offset_bottom = 36.0
 mouse_filter = 2
 color = Color(0.82, 0.3, 0.29, 1)
 
-[node name="Shop2DShelfCartridgeLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/ShelfCartridgeZone2D" unique_id=258957345]
+[node name="Shop2DShelfCartridgeLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/ShelfCartridgeZone2D" unique_id=258957345]
 layout_mode = 0
 offset_left = 42.0
 offset_top = 10.0
@@ -384,7 +399,7 @@ Stoc 50
 45.00 lei"
 autowrap_mode = 2
 
-[node name="ShelfConsoleZone2D" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=728453653]
+[node name="ShelfConsoleZone2D" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=728453653]
 layout_mode = 0
 offset_left = 264.00003
 offset_top = 200.0
@@ -393,7 +408,7 @@ offset_bottom = 316.0
 scale = Vector2(1.0401299, 0.99231946)
 color = Color(0.56, 0.17, 0.23, 1)
 
-[node name="ConsoleIcon" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/ShelfConsoleZone2D" unique_id=420931503]
+[node name="ConsoleIcon" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/ShelfConsoleZone2D" unique_id=420931503]
 layout_mode = 0
 offset_left = 10.0
 offset_top = 12.0
@@ -402,7 +417,7 @@ offset_bottom = 36.0
 mouse_filter = 2
 color = Color(0.92, 0.58, 0.5, 1)
 
-[node name="Shop2DShelfConsoleLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/ShelfConsoleZone2D" unique_id=101379344]
+[node name="Shop2DShelfConsoleLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/ShelfConsoleZone2D" unique_id=101379344]
 layout_mode = 0
 offset_left = 42.0
 offset_top = 10.0
@@ -413,7 +428,7 @@ Stoc 10
 180.00 lei"
 autowrap_mode = 2
 
-[node name="ShelfCollectorZone2D" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=1452402386]
+[node name="ShelfCollectorZone2D" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=1452402386]
 layout_mode = 0
 offset_left = 264.0
 offset_top = 329.0
@@ -422,7 +437,7 @@ offset_bottom = 445.0
 scale = Vector2(1.0401299, 0.99231946)
 color = Color(0.63, 0.19, 0.25, 1)
 
-[node name="CollectorIcon" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/ShelfCollectorZone2D" unique_id=1927871916]
+[node name="CollectorIcon" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/ShelfCollectorZone2D" unique_id=1927871916]
 layout_mode = 0
 offset_left = 10.0
 offset_top = 12.0
@@ -431,7 +446,7 @@ offset_bottom = 36.0
 mouse_filter = 2
 color = Color(0.9, 0.45, 0.37, 1)
 
-[node name="Shop2DShelfCollectorLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/ShelfCollectorZone2D" unique_id=2039260720]
+[node name="Shop2DShelfCollectorLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/ShelfCollectorZone2D" unique_id=2039260720]
 layout_mode = 0
 offset_left = 42.0
 offset_top = 10.0
@@ -442,7 +457,7 @@ Stoc 8
 85.00 lei"
 autowrap_mode = 2
 
-[node name="RegisterZone2D" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=1221396055]
+[node name="RegisterZone2D" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=1221396055]
 layout_mode = 0
 offset_left = 788.0
 offset_top = 351.0
@@ -451,7 +466,7 @@ offset_bottom = 485.0
 scale = Vector2(1.0401299, 0.99231946)
 color = Color(0.35, 0.1, 0.19, 1)
 
-[node name="Shop2DRegisterLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/RegisterZone2D" unique_id=646713468]
+[node name="Shop2DRegisterLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/RegisterZone2D" unique_id=646713468]
 layout_mode = 0
 offset_left = 16.344107
 offset_top = 15.116091
@@ -460,7 +475,7 @@ offset_bottom = 124.0
 text = "Casă de marcat"
 autowrap_mode = 2
 
-[node name="StorageZone2D" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=27795341]
+[node name="StorageZone2D" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=27795341]
 layout_mode = 0
 offset_left = 520.0
 offset_top = 71.0
@@ -469,7 +484,7 @@ offset_bottom = 153.63469
 scale = Vector2(1.0401299, 0.99231946)
 color = Color(0.46, 0.15, 0.22, 1)
 
-[node name="Shop2DStorageLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/StorageZone2D" unique_id=1807857553]
+[node name="Shop2DStorageLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/StorageZone2D" unique_id=1807857553]
 layout_mode = 0
 offset_left = 20.0
 offset_top = 12.0
@@ -479,7 +494,7 @@ text = "Depozit
 Comenzi 0"
 autowrap_mode = 2
 
-[node name="StorageFillTrack" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/StorageZone2D" unique_id=797275565]
+[node name="StorageFillTrack" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/StorageZone2D" unique_id=797275565]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 58.0
@@ -488,7 +503,7 @@ offset_bottom = 68.0
 mouse_filter = 2
 color = Color(0.25, 0.07, 0.15, 1)
 
-[node name="StorageFillBar" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/StorageZone2D/StorageFillTrack" unique_id=1445483844]
+[node name="StorageFillBar" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/StorageZone2D/StorageFillTrack" unique_id=1445483844]
 layout_mode = 0
 offset_left = 1.0
 offset_top = 1.0
@@ -497,7 +512,7 @@ offset_bottom = 9.0
 mouse_filter = 2
 color = Color(0.78, 0.28, 0.29, 1)
 
-[node name="DeliveryZone2D" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=1853098994]
+[node name="DeliveryZone2D" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=1853098994]
 layout_mode = 0
 offset_left = 736.00006
 offset_top = 71.0
@@ -506,23 +521,25 @@ offset_bottom = 153.0
 scale = Vector2(1.0401299, 0.99231946)
 color = Color(0.69, 0.22, 0.27, 1)
 
-[node name="DeliveryLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/DeliveryZone2D" unique_id=2139555617]
+[node name="DeliveryLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/DeliveryZone2D" unique_id=2139555617]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 12.0
 offset_right = 150.0
 offset_bottom = 36.0
 text = "Livrare"
+autowrap_mode = 2
 
-[node name="DeliveryCountLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/DeliveryZone2D" unique_id=614945529]
+[node name="DeliveryCountLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/DeliveryZone2D" unique_id=614945529]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 40.0
 offset_right = 170.0
 offset_bottom = 64.0
 text = "Comenzi 0"
+autowrap_mode = 2
 
-[node name="QueueLane2D" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=2004279416]
+[node name="QueueLane2D" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=2004279416]
 layout_mode = 0
 offset_left = 698.0
 offset_top = 488.0
@@ -532,15 +549,18 @@ scale = Vector2(1.0401299, 0.99231946)
 mouse_filter = 2
 color = Color(0.52, 0.16, 0.23, 1)
 
-[node name="QueueLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/QueueLane2D" unique_id=2122675715]
+[node name="QueueLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/QueueLane2D" unique_id=2122675715]
 layout_mode = 0
 offset_left = 102.87177
 offset_top = 12.092908
 offset_right = 166.87177
 offset_bottom = 34.092907
 text = "Coadă"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
 
-[node name="QueueSpot1" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/QueueLane2D" unique_id=232645466]
+[node name="QueueSpot1" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/QueueLane2D" unique_id=232645466]
 layout_mode = 0
 offset_left = 18.0
 offset_top = 12.0
@@ -549,7 +569,7 @@ offset_bottom = 28.0
 mouse_filter = 2
 color = Color(0.68, 0.25, 0.27, 1)
 
-[node name="QueueSpot2" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/QueueLane2D" unique_id=1148316453]
+[node name="QueueSpot2" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/QueueLane2D" unique_id=1148316453]
 layout_mode = 0
 offset_left = 44.0
 offset_top = 12.0
@@ -558,7 +578,7 @@ offset_bottom = 28.0
 mouse_filter = 2
 color = Color(0.68, 0.25, 0.27, 1)
 
-[node name="QueueSpot3" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/QueueLane2D" unique_id=2118056159]
+[node name="QueueSpot3" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/QueueLane2D" unique_id=2118056159]
 layout_mode = 0
 offset_left = 70.0
 offset_top = 12.0
@@ -567,7 +587,7 @@ offset_bottom = 28.0
 mouse_filter = 2
 color = Color(0.68, 0.25, 0.27, 1)
 
-[node name="CustomerMarker1" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=1628268741]
+[node name="CustomerMarker1" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=1628268741]
 visible = false
 layout_mode = 0
 offset_left = 312.0
@@ -577,7 +597,7 @@ offset_bottom = 514.0
 mouse_filter = 2
 color = Color(0.92, 0.58, 0.5, 1)
 
-[node name="CustomerMarker2" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=1598856137]
+[node name="CustomerMarker2" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=1598856137]
 visible = false
 layout_mode = 0
 offset_left = 342.0
@@ -587,7 +607,7 @@ offset_bottom = 514.0
 mouse_filter = 2
 color = Color(0.92, 0.58, 0.5, 1)
 
-[node name="CustomerMarker3" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=285582110]
+[node name="CustomerMarker3" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=285582110]
 visible = false
 layout_mode = 0
 offset_left = 372.0
@@ -597,7 +617,7 @@ offset_bottom = 514.0
 mouse_filter = 2
 color = Color(0.92, 0.58, 0.5, 1)
 
-[node name="CustomerMarker4" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=1653490086]
+[node name="CustomerMarker4" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=1653490086]
 visible = false
 layout_mode = 0
 offset_left = 402.0
@@ -607,7 +627,7 @@ offset_bottom = 514.0
 mouse_filter = 2
 color = Color(0.92, 0.58, 0.5, 1)
 
-[node name="CashierMarker" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=1249203870]
+[node name="CashierMarker" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=1249203870]
 layout_mode = 0
 offset_left = 913.0
 offset_top = 450.00003
@@ -617,15 +637,16 @@ scale = Vector2(1.0401299, 0.99231946)
 mouse_filter = 2
 color = Color(0.96, 0.69, 0.58, 1)
 
-[node name="CashierLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/CashierMarker" unique_id=945752904]
+[node name="CashierLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/CashierMarker" unique_id=945752904]
 layout_mode = 0
 offset_left = -16.0
 offset_top = 16.0
 offset_right = 54.0
 offset_bottom = 38.0
 text = "Casier"
+horizontal_alignment = 1
 
-[node name="StockerMarker" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=610542536]
+[node name="StockerMarker" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=610542536]
 layout_mode = 0
 offset_left = 703.00006
 offset_top = 157.0
@@ -635,15 +656,16 @@ scale = Vector2(1.0401299, 0.99231946)
 mouse_filter = 2
 color = Color(0.86, 0.52, 0.48, 1)
 
-[node name="StockerLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/StockerMarker" unique_id=1013294999]
+[node name="StockerLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/StockerMarker" unique_id=1013294999]
 layout_mode = 0
 offset_left = -20.0
 offset_top = 16.0
 offset_right = 70.0
 offset_bottom = 38.0
 text = "Lucrător"
+horizontal_alignment = 1
 
-[node name="ManagerMarker" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=1173192023]
+[node name="ManagerMarker" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=1173192023]
 layout_mode = 0
 offset_left = 622.0
 offset_top = 255.0
@@ -653,15 +675,16 @@ scale = Vector2(1.0401299, 0.99231946)
 mouse_filter = 2
 color = Color(0.93, 0.55, 0.47, 1)
 
-[node name="ManagerLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView/ManagerMarker" unique_id=440990100]
+[node name="ManagerLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView/ManagerMarker" unique_id=440990100]
 layout_mode = 0
 offset_left = -18.0
 offset_top = 16.0
 offset_right = 70.0
 offset_bottom = 38.0
 text = "Manager"
+horizontal_alignment = 1
 
-[node name="DeliveryCrateMarker1" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=1915816450]
+[node name="DeliveryCrateMarker1" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=1915816450]
 visible = false
 layout_mode = 0
 offset_left = 284.0
@@ -671,7 +694,7 @@ offset_bottom = 96.0
 mouse_filter = 2
 color = Color(0.8, 0.29, 0.29, 1)
 
-[node name="DeliveryCrateMarker2" type="ColorRect" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/Shop2DView" unique_id=306555629]
+[node name="DeliveryCrateMarker2" type="ColorRect" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/Shop2DView" unique_id=306555629]
 visible = false
 layout_mode = 0
 offset_left = 310.0
@@ -681,28 +704,28 @@ offset_bottom = 96.0
 mouse_filter = 2
 color = Color(0.8, 0.29, 0.29, 1)
 
-[node name="RightContextPanel" type="PanelContainer" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea" unique_id=212356148]
+[node name="RightContextPanel" type="PanelContainer" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea" unique_id=212356148]
 visible = false
 custom_minimum_size = Vector2(220, 0)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="RightContextMargin" type="MarginContainer" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/RightContextPanel" unique_id=534868631]
+[node name="RightContextMargin" type="MarginContainer" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/RightContextPanel" unique_id=534868631]
 layout_mode = 2
 theme_override_constants/margin_left = 8
 theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 8
 theme_override_constants/margin_bottom = 8
 
-[node name="RightContextRoot" type="VBoxContainer" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/RightContextPanel/RightContextMargin" unique_id=804377702]
+[node name="RightContextRoot" type="VBoxContainer" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/RightContextPanel/RightContextMargin" unique_id=804377702]
 layout_mode = 2
 theme_override_constants/separation = 6
 
-[node name="RightContextTitle" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/RightContextPanel/RightContextMargin/RightContextRoot" unique_id=1950616116]
+[node name="RightContextTitle" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/RightContextPanel/RightContextMargin/RightContextRoot" unique_id=1950616116]
 layout_mode = 2
 text = "Context"
 
-[node name="RightContextLabel" type="Label" parent="GameplayRoot/AppVBox/BodyHBox/MainGameArea/RightContextPanel/RightContextMargin/RightContextRoot" unique_id=1845848645]
+[node name="RightContextLabel" type="Label" parent="MarginContainer/RootLayout/BodyLayout/MainGameArea/RightContextPanel/RightContextMargin/RightContextRoot" unique_id=1845848645]
 layout_mode = 2
 autowrap_mode = 2
 
@@ -1094,25 +1117,25 @@ layout_mode = 2
 [node name="StartupNewGameButton" type="Button" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin/StartupRoot" unique_id=934922486]
 custom_minimum_size = Vector2(260, 52)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Joc Nou"
 
 [node name="StartupLoadFileButton" type="Button" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin/StartupRoot" unique_id=635970437]
 custom_minimum_size = Vector2(260, 52)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Încarcă Joc"
 
 [node name="StartupOptionsButton" type="Button" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin/StartupRoot" unique_id=1522844875]
 custom_minimum_size = Vector2(260, 52)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Setări"
 
 [node name="StartupExitButton" type="Button" parent="StartupMenu/StartupCenter/StartupCard/StartupMargin/StartupRoot" unique_id=2036876677]
 custom_minimum_size = Vector2(260, 52)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Ieșire"
 
 [node name="StartupOptionsPopup" type="PanelContainer" parent="StartupMenu" unique_id=1873361031]

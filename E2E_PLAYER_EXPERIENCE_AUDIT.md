@@ -1,11 +1,15 @@
 # E2E Player Experience Audit
 
+Last updated: 2026-06-05
+
+Implementation status: applied. The E2E first-run flow now teaches stocking, one explicit price edit, opening the store, checkout feedback, expansion/staff goals, and first-day reporting with slot-based save/load.
+
 ## Current Player Flow
 
 1. Player launches the game and sees the startup menu.
 2. `Joc nou` opens store setup: name, difficulty, duration.
 3. A Relaxed first run starts in day 1 Management with empty shelves.
-4. The HUD/checklist tells the player to stock the first shelf.
+4. The HUD/task box and tutorial tell the player to stock the first shelf.
 5. `Comenzi` contains product orders, shop purchases, shelf assignment, and shelf refill.
 6. `Prețuri` contains product price editing.
 7. `Deschide` enters the Business phase; customers browse shelves, queue, and generate revenue/reputation feedback.
@@ -44,9 +48,13 @@
 7. Missing target shows `Nu există produs selectat.`
 8. Loading a save hides transient modals and refreshes the HUD/checklist.
 9. Added regression coverage for price validation, onboarding order/completion, and static price menu binding contracts.
+10. Restored the price tutorial step after stocking so the E2E path teaches pricing before the first store opening.
+11. Kept the old checklist removed; the compact task box now shows only the current concrete action.
 
 ## Manual Follow-Up Checks
 
 - Verify in Godot that the price input receives focus when `Prețuri` opens.
 - Verify Escape closes the current modal first in startup setup, save/load, price, orders, staff, event, report, and confirmation flows.
 - Verify Relaxed mode still starts with empty shelves and Normal/Hard behavior is unchanged.
+
+Verification: `dotnet test ChronoIndustrialist.sln` passes with 48 tests.

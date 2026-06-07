@@ -85,7 +85,7 @@ public sealed class GameManagerSmokeTests
             game.ActiveEconomicMood,
             "None");
 
-        Assert.Equal(game.Employees.TotalSalary, report.Payroll);
+        Assert.Equal(game.GetAdjustedPayrollCost(game.Employees.TotalSalary), report.Payroll);
     }
 
     [Fact]
@@ -95,7 +95,7 @@ public sealed class GameManagerSmokeTests
         int reputationBefore = game.Customers.Reputation;
         Money expensesBefore = game.Economy.DailyExpenses;
 
-        Assert.True(game.TriggerPlaceholderEvent());
+        Assert.True(game.TriggerDebugEvent());
         Assert.True(game.ResolveEventDecision(0));
         Assert.True(game.Customers.Reputation > reputationBefore);
         Assert.True(game.Economy.DailyExpenses > expensesBefore);

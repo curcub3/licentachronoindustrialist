@@ -44,7 +44,7 @@ namespace Core.Simulation.Logic
             switch (command.ActionType)
             {
                 case 0:
-                    // Placeholder for future Phase 2/3 action processing.
+                    // Reserved for future Phase 2/3 action processing.
                     break;
                 default:
                     // Unsupported action types may be logged or ignored in this phase.

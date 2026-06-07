@@ -31,6 +31,16 @@ public sealed class RegressionCoverageTests
     }
 
     [Fact]
+    public void DefaultNewGameStartsInRelaxedGuidedMode()
+    {
+        using var game = new GameManager(10000);
+
+        Assert.Equal(GameDifficulty.Relaxed, game.Difficulty);
+        Assert.All(game.Inventory.Shelves, shelf => Assert.Equal(0, shelf.CurrentStock));
+        Assert.False(game.GetOnboardingObjectives().Single(item => item.Objective.Id == "stock_first_shelf").IsCompleted);
+    }
+
+    [Fact]
     public void NormalModeKeepsStockedStartingShelves()
     {
         using var game = new GameManager(10000, settings: new GameStartSettings("Normal", GameDifficulty.Normal, 14));
@@ -370,6 +380,7 @@ public sealed class RegressionCoverageTests
         Assert.Contains("Name = \"TutorialBodyScroll\"", uiManager);
         Assert.Contains("HorizontalScrollMode = ScrollContainer.ScrollMode.Disabled", uiManager);
         Assert.Contains("StartGuidedTutorial();", uiManager);
+        Assert.Contains("ShowTutorialForNewGame();", uiManager);
         Assert.Contains("RefreshModalOverlayVisibility();", uiManager);
     }
 
@@ -417,14 +428,17 @@ public sealed class RegressionCoverageTests
         Assert.Contains("GetQueuePoint", customerController);
         Assert.Contains("GetRegisterServicePoint", customerController);
         Assert.Contains("BuildPath(actor.Position, finalTarget, _game)", customerController);
+        Assert.Contains("_customerFocusPoints.Clear()", customerController);
+        Assert.DoesNotContain("OrderBy(candidate => candidate.QueueSequence)", customerController);
         Assert.DoesNotContain("Position = finalTarget", customerController);
 
         Assert.Contains("NameLabel", employeeController);
         Assert.Contains("RoleLabel", employeeController);
         Assert.Contains("RoleToRomanian", employeeController);
-        Assert.Contains("Position = new Vector2(37f, 0f)", employeeController);
+        Assert.Contains("Position = new Vector2(45f, 0f)", employeeController);
         Assert.Contains("Position = new Vector2(6f, 22f)", employeeController);
         Assert.Contains("Position = new Vector2(6f, 34f)", employeeController);
+        Assert.Contains("ShortenLabel(employee.Name, 14)", employeeController);
         Assert.Contains("BuildPath(actor.Position, finalTarget, _game)", employeeController);
 
         Assert.Contains("GetSolidShelfObstacles(GameManager? game)", layoutManager);
@@ -436,6 +450,9 @@ public sealed class RegressionCoverageTests
         Assert.Contains("CreateShelfVisual(key", furnitureController);
         Assert.Contains("GetPurchasedShelfPlacements(game)", furnitureController);
         Assert.Contains("CreateShelfVisualFromOriginal", furnitureController);
+        Assert.Contains("CreateMissingAssetVisual", furnitureController);
+        Assert.Contains("ASSET LIPSĂ: raft", furnitureController);
+        Assert.Contains("CreateTemporaryFurnitureStyle", furnitureController);
     }
 
     [Fact]
@@ -555,7 +572,7 @@ public sealed class RegressionCoverageTests
         Assert.Contains("BeginPriceEdit", uiManager);
         Assert.Contains("ClearPriceEditTarget", uiManager);
         Assert.Contains("BeginPriceEdit(productId.Value, focusInput: false)", uiManager);
-        Assert.DoesNotContain("CompleteTutorialStep(TutorialStep.SetPrice);\n\t\t\t\tHidePricesPopup();", uiManager);
+        Assert.Contains("CompleteTutorialStep(TutorialStep.SetPrice);\n\t\t\t\tHidePricesPopup();", uiManager);
         Assert.Contains("RuntimePriceTargetLabel", uiRoot);
         Assert.Contains("Preț actualizat pentru {0}.", ro);
         Assert.Contains("Nu există produs selectat.", ro);
@@ -572,8 +589,13 @@ public sealed class RegressionCoverageTests
 
         Assert.DoesNotContain("RuntimeTaskChecklist", uiRoot);
         Assert.DoesNotContain("TaskChecklist.tscn", uiRoot);
+        Assert.False(File.Exists(Path.Combine(projectRoot, "client.godot", "Assets", "UI", "components", "TaskChecklist.tscn")));
+        Assert.False(File.Exists(Path.Combine(projectRoot, "client.godot", "Assets", "UI", "components", "TaskChecklistItem.tscn")));
+        Assert.False(File.Exists(Path.Combine(projectRoot, "client.godot", "Assets", "UI", "scripts", "task_checklist.gd")));
+        Assert.False(File.Exists(Path.Combine(projectRoot, "client.godot", "Assets", "UI", "scripts", "task_checklist_item.gd")));
         Assert.Contains("BuildTaskBoxText", uiManager);
         Assert.Contains("BuildOpeningTaskList", uiManager);
+        Assert.Contains("GetTaskForObjective", uiManager);
         Assert.Contains("RefreshMenuProgressIndicators", uiManager);
         Assert.Contains("Setează prețurile", uiManager);
         Assert.Contains("Plasează o comandă", uiManager);
@@ -582,7 +604,7 @@ public sealed class RegressionCoverageTests
         Assert.Contains("Verifică rapoartele", uiManager);
         Assert.Contains("_reportsViewed = true;", uiManager);
         Assert.Contains("_staffChanged = true;", uiManager);
-        Assert.DoesNotContain("ShowOpenShopWarning(warnings);", uiManager);
+        Assert.Contains("ShowOpenShopWarning(warnings);", uiManager);
         Assert.DoesNotContain("HideEventPopup();\n\t\t\t}", uiManager);
     }
 
@@ -600,7 +622,7 @@ public sealed class RegressionCoverageTests
         Assert.Contains("Stoc {_game.Inventory.TotalStorageUnits}/{_game.Inventory.StorageCapacity}", uiManager);
         Assert.Contains("_shop2DStatusLabel.Visible = false;", uiManager);
         Assert.Contains("0.52f, 0.88f", uiManager);
-        Assert.Contains("custom_minimum_size = Vector2(286, 100)", uiRoot);
+        Assert.Contains("custom_minimum_size = Vector2(260, 100)", uiRoot);
         Assert.Contains("bg_color = Color(0.54, 0.27, 0.1, 1)", theme);
         Assert.Contains("Chrono/colors/success = Color(0.84, 0.46, 0.18, 1)", theme);
         Assert.Contains("corner_radius_top_left = 1", theme);
@@ -613,7 +635,9 @@ public sealed class RegressionCoverageTests
         string projectRoot = FindRepoRoot();
         string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
         string uiRoot = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Scenes", "UIRoot.tscn"));
+        string newGame = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Scenes", "NewGameSetupPanel.tscn"));
         string theme = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Themes", "ChronoTheme.tres"));
+        string sceneText = uiRoot + "\n" + newGame;
 
         Assert.Contains("ConfigureButtonSize", uiManager);
         Assert.Contains("OrdersPopupSize = new(460f, 520f)", uiManager);
@@ -624,7 +648,16 @@ public sealed class RegressionCoverageTests
         Assert.Contains("Math.Max(300f, preferredSize.X)", uiManager);
         Assert.Contains("Magazin retro în buclă de timp", uiRoot);
         Assert.Contains("custom_minimum_size = Vector2(260, 52)", uiRoot);
-        Assert.Contains("custom_minimum_size = Vector2(0, 78)", uiRoot);
+        Assert.Contains("[node name=\"MarginContainer\" type=\"MarginContainer\" parent=\".\"", uiRoot);
+        Assert.Contains("[node name=\"RootLayout\" type=\"VBoxContainer\" parent=\"MarginContainer\"", uiRoot);
+        Assert.Contains("[node name=\"BodyLayout\" type=\"HBoxContainer\" parent=\"MarginContainer/RootLayout\"", uiRoot);
+        Assert.Contains("[node name=\"TopMenu\" type=\"PanelContainer\" parent=\"MarginContainer/RootLayout\"", uiRoot);
+        Assert.Contains("[node name=\"LeftMenu\" type=\"PanelContainer\" parent=\"MarginContainer/RootLayout/BodyLayout\"", uiRoot);
+        Assert.Contains("[node name=\"MainGameArea\" type=\"HBoxContainer\" parent=\"MarginContainer/RootLayout/BodyLayout\"", uiRoot);
+        Assert.Contains("custom_minimum_size = Vector2(0, 64)", uiRoot);
+        Assert.DoesNotContain("clip_text = true", sceneText);
+        Assert.DoesNotContain("offset_bottom = 18.767822", uiRoot);
+        Assert.DoesNotContain("theme_override_font_sizes/font_size = 20", sceneText);
         Assert.DoesNotContain("RuntimeTaskChecklist", uiRoot);
         Assert.DoesNotContain("TaskChecklist.tscn", uiRoot);
         Assert.Contains("RuntimeTaskBoxLabel", uiRoot);
@@ -633,6 +666,12 @@ public sealed class RegressionCoverageTests
         Assert.Contains("Button/colors/font_hover_color = Color(1, 0.96, 0.86, 1)", theme);
         Assert.DoesNotContain("Button/colors/font_hover_color = Color(1, 1, 1, 1)", theme);
         Assert.Contains("OptionButton/styles/hover = SubResource(\"StyleBoxFlat_button_hover\")", theme);
+        Assert.Contains("RunDebugOverlapCheck", uiManager);
+        Assert.Contains("UI layout overlap:", uiManager);
+        Assert.Contains("UI popup bounds:", uiManager);
+        Assert.DoesNotContain("GameplayRoot", uiRoot + uiManager);
+        Assert.DoesNotContain("AppVBox", uiRoot + uiManager);
+        Assert.DoesNotContain("BodyHBox", uiRoot + uiManager);
     }
 
     [Fact]
@@ -676,6 +715,8 @@ public sealed class RegressionCoverageTests
         string uiManager = File.ReadAllText(Path.Combine(projectRoot, "client.godot", "Visuals", "UIManager.cs"));
 
         Assert.Contains("HideAllPopups();\n\t\t\t\tClearPriceEditTarget();\n\t\t\t\tInvalidateShopNavigation();", uiManager);
+        Assert.Contains("_runtimeTriggerEventButton.Visible = EnableLayoutDebug;", uiManager);
+        Assert.Contains("if (_game == null || !EnableLayoutDebug)", uiManager);
         Assert.DoesNotContain("GD.Print(\"UIManager: Open Shop pressed.", uiManager);
         Assert.DoesNotContain("GD.Print(\"UIManager: Apply Price pressed.", uiManager);
         Assert.DoesNotContain("GD.Print(\"UIManager: Place Order pressed.", uiManager);
@@ -752,12 +793,11 @@ public sealed class RegressionCoverageTests
 
         Assert.Contains("Bun venit! Primul pas: aprovizionează un raft.", uiManager);
         Assert.Contains("Acum setează prețul unui produs.", uiManager);
+        Assert.Contains("Acum deschide magazinul.", uiManager);
         Assert.Contains("Clienții intră prin ușă și caută produse pe rafturi.", uiManager);
         Assert.Contains("După cumpărături, clienții așteaptă la casă.", uiManager);
-        Assert.Contains("Casierii reduc coada. Stocarii ajută rafturile.", uiManager);
         Assert.Contains("Numerarul crește când vinzi", uiManager);
         Assert.Contains("Reputația scade dacă rafturile sunt goale", uiManager);
-        Assert.Contains("Cumpără rafturi din Comenzi când ai bani.", uiManager);
         Assert.Contains("Pas {(int)_tutorialStep + 1}/{TutorialStepCount}", uiManager);
     }
 

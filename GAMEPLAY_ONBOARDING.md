@@ -1,5 +1,9 @@
 # Gameplay Onboarding
 
+Last updated: 2026-06-05
+
+Implementation status: applied. This document now matches the E2E first-run flow and the current `OnboardingObjectiveCatalog`.
+
 This note documents the early-game guidance and Relaxed-mode tuning.
 
 ## Tutorial Flow
@@ -7,16 +11,15 @@ This note documents the early-game guidance and Relaxed-mode tuning.
 The first-run tutorial uses short Romanian steps:
 
 1. Welcome the player and stock a shelf from storage.
-2. Open the store.
-3. Watch customers enter and browse shelves.
-4. Watch the cashier queue.
-5. Check how employees help.
+2. Set one product price from `Prețuri`.
+3. Open the store.
+4. Watch customers enter and browse shelves.
+5. Watch the cashier queue.
 6. Read how money is earned and spent.
 7. Read why reputation changes.
-8. Learn that new shelves are bought from `Comenzi`.
-9. Follow the current objective.
-10. Read the daily report.
-11. Finish and continue with the checklist.
+8. Follow the current objective.
+9. Read the daily report.
+10. Finish and continue with the task box/objectives.
 
 The tutorial is intentionally lightweight: it teaches the existing loop without hiding mechanics or adding a separate mode.
 
@@ -71,6 +74,10 @@ The HUD alert summary and action notifications explain:
 - Not enough money.
 - Furniture purchase/place failure.
 - Reputation risk from shelves and queue pressure.
+
+## Verification
+
+`dotnet test ChronoIndustrialist.sln` passes with 48 tests. Regression coverage checks Relaxed defaults, onboarding order/completion, first-checkout feedback, price validation/target binding, save/load cleanup, and UI refresh throttling.
 
 ## Adjusting Later
 

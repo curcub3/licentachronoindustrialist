@@ -14,6 +14,7 @@ namespace Client.Scripts.Visuals.Store
         private readonly StoreLayoutManager _layout;
         private readonly Control _layer;
         private readonly List<CustomerActor> _actors = new();
+        private readonly List<Vector2> _customerFocusPoints = new();
         private readonly Random _random = new(20260603);
 
         private GameManager? _game;
@@ -87,10 +88,14 @@ namespace Client.Scripts.Visuals.Store
 
         public IReadOnlyList<Vector2> GetCustomerFocusPoints()
         {
-            return _actors
-                .Where(actor => actor.Root.Visible && (actor.State is CustomerVisualState.Browsing or CustomerVisualState.Deciding or CustomerVisualState.Queueing or CustomerVisualState.Paying))
-                .Select(actor => actor.Position + new Vector2(8f, 8f))
-                .ToList();
+            _customerFocusPoints.Clear();
+            foreach (CustomerActor actor in _actors)
+            {
+                if (actor.Root.Visible && actor.State is CustomerVisualState.Browsing or CustomerVisualState.Deciding or CustomerVisualState.Queueing or CustomerVisualState.Paying)
+                    _customerFocusPoints.Add(actor.Position + actor.Root.Size * 0.5f);
+            }
+
+            return _customerFocusPoints;
         }
 
         private void EnsureActors()
@@ -104,21 +109,46 @@ namespace Client.Scripts.Visuals.Store
                 {
                     Name = $"CustomerActor{index + 1}",
                     Visible = false,
-                    Size = new Vector2(16f, 16f),
+                    Size = new Vector2(58f, 34f),
                     MouseFilter = Control.MouseFilterEnum.Ignore
                 };
 
                 var body = new ColorRect
                 {
                     Name = "Body",
+                    Position = new Vector2(21f, 0f),
                     Size = new Vector2(16f, 16f),
-                    Color = new Color(0.20f, 0.72f, 0.95f, 1f),
+                    Color = new Color(0.78f, 0.88f, 0.95f, 1f),
                     MouseFilter = Control.MouseFilterEnum.Ignore
                 };
 
+                var labelBackdrop = new ColorRect
+                {
+                    Name = "LabelBackdrop",
+                    Position = new Vector2(2f, 18f),
+                    Size = new Vector2(54f, 14f),
+                    Color = new Color(0.12f, 0.06f, 0.08f, 0.82f),
+                    MouseFilter = Control.MouseFilterEnum.Ignore
+                };
+
+                var label = new Label
+                {
+                    Name = "Label",
+                    Position = new Vector2(3f, 18f),
+                    Size = new Vector2(52f, 14f),
+                    Text = "Client",
+                    HorizontalAlignment = HorizontalAlignment.Center,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    ClipText = true,
+                    MouseFilter = Control.MouseFilterEnum.Ignore
+                };
+                label.AddThemeFontSizeOverride("font_size", 10);
+
                 root.AddChild(body);
+                root.AddChild(labelBackdrop);
+                root.AddChild(label);
                 _layer.AddChild(root);
-                _actors.Add(new CustomerActor(root, body));
+                _actors.Add(new CustomerActor(root, body, label));
             }
         }
 
@@ -288,12 +318,20 @@ namespace Client.Scripts.Visuals.Store
 
         private int GetQueueIndex(CustomerActor actor)
         {
-            return _actors
-                .Where(candidate => candidate.Root.Visible && (candidate.State is CustomerVisualState.Queueing or CustomerVisualState.Paying))
-                .OrderBy(candidate => candidate.QueueSequence)
-                .Select((candidate, index) => (candidate, index))
-                .FirstOrDefault(tuple => ReferenceEquals(tuple.candidate, actor))
-                .index;
+            if (actor.QueueSequence <= 0)
+                return 0;
+
+            int index = 0;
+            foreach (CustomerActor candidate in _actors)
+            {
+                if (!candidate.Root.Visible || candidate.QueueSequence <= 0 || candidate.State is not (CustomerVisualState.Queueing or CustomerVisualState.Paying))
+                    continue;
+
+                if (candidate.QueueSequence < actor.QueueSequence)
+                    index++;
+            }
+
+            return index;
         }
 
         private void BeginLeaving(CustomerActor actor)
@@ -403,14 +441,16 @@ namespace Client.Scripts.Visuals.Store
 
         private sealed class CustomerActor
         {
-            public CustomerActor(Control root, ColorRect body)
+            public CustomerActor(Control root, ColorRect body, Label label)
             {
                 Root = root;
                 Body = body;
+                Label = label;
             }
 
             public Control Root { get; }
             public ColorRect Body { get; }
+            public Label Label { get; }
             public bool Active { get; set; }
             public CustomerVisualState State { get; set; }
             public Vector2 Position { get; set; }
